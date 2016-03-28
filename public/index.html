@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Heads Up Holdem</title>
+
+  <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+  <link rel="stylesheet" href="css/style.css"></link>
+</head>
+<body>
+  <!-- Front page menu-->
+  <div class="ui menu">
+    <div class="item floated right hide" id="user-status">
+      <p></p>
+    </div>
+    <div class="item floated right">
+      <div class="ui button" id="show-login">Log in</div>
+      <div class="ui primary button" id="show-signup">Sign up</div>
+      <div class="ui primary button hide" id="logout">Log out</div>
+    </div>
+  </div>
+  <!-- Login form -->
+  <div class="ui middle aligned center aligned grid hide" id="login-form">
+    <div class="four wide column">
+      <h2 class="ui header">Log in</h2>
+      <form class="ui large form" id="login">
+        <div class="ui stacked segment">
+          <div class="field">
+            <div class="ui left icon input">
+              <i class="user icon"></i>
+              <input type="text" placeholder="Username" id="login-user">
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui left icon input">
+              <i class="lock icon"></i>
+              <input type="password" placeholder="Password" id="login-pwd">
+            </div>
+          </div>
+          <button type="submit" class="ui fluid large teal submit button">Log in</button>
+        </div>
+      </form>
+      <div class="ui message hide" id="login-message">
+        <p></p>
+      </div>
+      <div class="ui message">
+        <p>Don't have an account? <a href="#" id="signup-link">Sign up</a></p>
+      </div>
+    </div>
+  </div>
+  <!-- Sign up form -->
+  <div class="ui middle aligned center aligned grid hide" id="signup-form">
+    <div class="four wide column">
+      <h2 class="ui header">Sign up</h2>
+      <form class="ui large form" id="signup">
+        <div class="ui stacked segment">
+          <div class="field">
+            <div class="ui left icon input">
+              <i class="user icon"></i>
+              <input type="text" placeholder="Username" id="new-user">
+              <span><i class="remove circle large icon input-check" id="user-input"></i></span>
+            </div>
+          </div>
+          <div class="field">
+            <div class="ui left icon input">
+              <i class="lock icon"></i>
+              <input type="password" placeholder="Password" id="new-pwd">
+              <span><i class="remove circle large icon input-check" id="pwd-input"></i></span>
+            </div>
+          </div>
+          <button type="submit" class="ui fluid large teal submit button">Sign up</button>
+        </div>
+      </form>
+      <div class="ui message" id="signup-message">
+        <p>Your username must be at least 3 characters</p>
+        <p>Your password must be at least 3 characters</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+  <script src="semantic/dist/semantic.min.js"></script>
+  <script src="js/default.js"></script>
+</body>
+</html>

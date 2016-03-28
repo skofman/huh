@@ -1,0 +1,29 @@
+{
+  "name": "huh",
+  "version": "1.0.0",
+  "description": "Heads Up Holdem",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skofman/huh.git"
+  },
+  "keywords": [
+    "holdem",
+    "poker"
+  ],
+  "author": "skofman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/skofman/huh/issues"
+  },
+  "homepage": "https://github.com/skofman/huh#readme",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "cookie-parser": "^1.4.1",
+    "express": "^4.13.4",
+    "semantic-ui": "^2.1.8"
+  }
+}

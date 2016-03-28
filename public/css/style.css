@@ -1,0 +1,29 @@
+#show-login {
+  margin-right: 20px;
+}
+
+.hide {
+  display: none !important;
+}
+
+#login-message p {
+  color: red;
+  font-weight: bold;
+}
+
+.input-check {
+  margin-top: 5px !important;
+  margin-left: 5px !important;
+  margin-right: 0 !important;
+  color: red;
+}
+
+#signup-message p {
+  color: red;
+  font-weight: bold;
+}
+
+#signup-message {
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+}
