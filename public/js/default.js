@@ -1,3 +1,5 @@
+var socket = io.connect('http://localhost:8080');
+
 $('#show-login').click(function() {
   $('#login-form').removeClass('hide');
   $('#signup-form').addClass('hide');
@@ -319,10 +321,10 @@ $("input[name='blinds']").change(function(event) {
 });
 //Events for plus / minus buttons
 $('#start-plus').click(function() {
-  var bb = $('#start-buyin').attr('data-bb');
+  var bb = Number($('#start-buyin').attr('data-bb'));
   var value = Number($('#start-buyin').val().trim()) + Number(bb);
   if (value > bb * 150) {
-    $('#start-buyin').val(Number(bb) * 150);
+    $('#start-buyin').val(bb * 150);
   }
   else {
     $('#start-buyin').val(value);
@@ -330,12 +332,63 @@ $('#start-plus').click(function() {
 });
 
 $('#start-minus').click(function() {
-  var bb = $('#start-buyin').attr('data-bb');
-  var value = Number($('#start-buyin').val().trim()) - Number(bb);
+  var bb = Number($('#start-buyin').attr('data-bb'));
+  var value = Number($('#start-buyin').val().trim()) - bb;
   if (value < bb * 40) {
-    $('#start-buyin').val(Number(bb) * 40);
+    $('#start-buyin').val(bb * 40);
   }
   else {
     $('#start-buyin').val(value);
   }
+});
+//Event for table creation
+$('#create').click(function() {
+  var bb = Number($('#start-buyin').attr('data-bb'));
+  var buyin = Number($('#start-buyin').val());
+  var balance = Number($('#dash-balance').text().trim());
+  if (buyin > bb * 150) {
+    alert("You can't buy in for more than " + bb * 150);
+    $('#start-buyin').val(bb * 150);
+    return;
+  }
+
+  if (buyin > balance) {
+    alert("You don't have the available balance");
+    $('#start-buyin').val(balance);
+    return;
+  }
+
+  var data = {
+    player: $('#dash-user h5').text().trim(),
+    bb: $('#start-buyin').attr('data-bb'),
+    buyin: $('#start-buyin').val()
+  };
+  socket.emit('create table', data);
+});
+//Receiving created table from the server
+socket.on('my table', function(data) {
+  switch(data.status) {
+    case 'create':
+      $('#table-name').text(data.name);
+      var info = 'Blinds: ' + Number(data.bb) / 2 + ' / ' + data.bb + '.  Stack: ' + data.stack + '.';
+      $('#table-info').text(info);
+      $('#create-card').addClass('hide');
+      $('#remove-card').removeClass('hide');
+      break;
+    case 'remove':
+      $('#remove-card').addClass('hide');
+      $('#create-card').removeClass('hide');
+      break;
+  }
+});
+//Event for table removal
+$('#remove').click(function() {
+  var data = {
+    table: $('#table-name').text()
+  }
+  socket.emit('remove table', data);
+});
+//Populating existing tables
+socket.on('post tables', function(data) {
+  console.log(data);
 });

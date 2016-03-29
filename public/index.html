@@ -164,7 +164,8 @@
         </div>
       </div>
       <div class="row hide" id="new-table">
-        <div class="ui card">
+        <!-- New table creation card -->
+        <div class="ui card" id="create-card">
           <div class="content">
             <div class="center aligned header">New table</div>
           </div>
@@ -220,7 +221,24 @@
             </div>
           </div>
           <div class="extra content">
-            <button class="ui fluid button">Create table</button>
+            <button class="ui fluid button" id="create">Create table</button>
+          </div>
+        </div>
+        <!-- created table card -->
+        <div class="ui card hide" id="remove-card">
+          <div class="content">
+            <div class="center aligned header" id="table-name"></div>
+          </div>
+          <div class="content">
+            <div class="center aligned description">
+              No Limit Texas Hold'em
+            </div>
+          </div>
+          <div class="content">
+            <div class="center aligned description" id="table-info"></div>
+          </div>
+          <div class="extra content">
+            <button class="ui fluid button" id="remove">Remove table</button>
           </div>
         </div>
       </div>
@@ -229,6 +247,7 @@
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
   <script src="semantic/dist/semantic.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
   <script src="js/default.js"></script>
 </body>
 </html>
