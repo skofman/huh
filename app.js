@@ -89,7 +89,8 @@ app.post('/login', jsonParser, function(req, res) {
         balance: users[req.body.username].bankroll,
         first: users[req.body.username].firstname,
         last: users[req.body.username].lastname,
-        loc: users[req.body.username].location
+        loc: users[req.body.username].location,
+        tables: tables
       };
       res.status(200).json(payload);
     }
@@ -149,7 +150,7 @@ io.on('connection', function(socket) {
     }
     tables[name] = new Table(data.player, data.bb);
     tables[name].first.stack = data.buyin;
-    //updateFile('tables');
+    updateFile('tables');
     var update = {
       name: name,
       bb: data.bb,
@@ -161,7 +162,9 @@ io.on('connection', function(socket) {
   });
   socket.on('remove table', function(data) {
     delete tables[data.table];
+    updateFile('tables');
     socket.emit('my table', {status: 'remove'});
+    io.emit('post tables', tables);
   });
 })
 //Server listener

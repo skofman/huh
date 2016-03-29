@@ -38,6 +38,38 @@ $('#login').submit(function(event) {
       $('#dash-last h5').text(data.last + ' ');
       $('#dash-loc h5').text(data.loc + ' ');
       $('#main').removeClass('hide');
+      //create active table
+      console.log(data.tables);
+      for (key in data.tables) {
+        var col = document.createElement('div');
+        var card = document.createElement('div');
+        var nameContent = document.createElement('div');
+        var name = document.createElement('div');
+        var gameContent = document.createElement('div');
+        var game = document.createElement('div');
+        var infoContent = document.createElement('div');
+        var playerName = document.createElement('div');
+        var gameInfo = document.createElement('div');
+        var btnContent = document.createElement('div');
+        var btn = document.createElement('button');
+
+        $(col).addClass('four wide column').appendTo('#game-grid');
+        $(card).addClass('ui card').appendTo(col);
+        $(nameContent).addClass('content').appendTo(card);
+        $(name).addClass('center aligned header').text(key).appendTo(nameContent);
+        $(gameContent).addClass('content').appendTo(card);
+        $(game).addClass('center aligned description').text("No Limit Texas Hold'em").appendTo(gameContent);
+        $(infoContent).addClass('content').appendTo(card);
+        $(playerName).addClass('description').text('Player: ' + data.tables[key].first.player).appendTo(infoContent);
+        $(gameInfo).addClass('description').text('Blinds: ' + Number(data.tables[key].bb) / 2 + ' / ' + data.tables[key].bb + '.').appendTo(infoContent);
+        $(btnContent).addClass('extra content').appendTo(card);
+        switch(data.tables[key].status) {
+          case 'waiting':
+            var text = 'Join table';
+            break;
+        }
+        $(btn).addClass('ui fluid button').text(text).appendTo(btnContent);
+      }
     }
     else {
       $('#login-message p').text(xhr.responseText);
@@ -304,12 +336,17 @@ $('#player-menu').click(function(event) {
     case 'Home':
       $('#info').removeClass('hide');
       $('#new-table').addClass('hide');
+      $('#join-table').addClass('hide');
       break;
     case 'New table':
       $('#info').addClass('hide');
       $('#new-table').removeClass('hide');
+      $('#join-table').addClass('hide');
       break;
     case 'Join table':
+      $('#info').addClass('hide');
+      $('#new-table').addClass('hide');
+      $('#join-table').removeClass('hide');
       break;
     case 'Past sessions':
       break;
