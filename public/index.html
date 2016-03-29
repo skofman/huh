@@ -81,7 +81,7 @@
     <div class="one wide column"></div>
     <!-- Player menu -->
     <div class="three wide column">
-      <div class="ui vertical pointing menu">
+      <div class="ui vertical pointing menu" id="player-menu">
         <a class="active item">Home</a>
         <a class="item">New table</a>
         <a class="item">Join table</a>
@@ -160,6 +160,67 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+      <div class="row hide" id="new-table">
+        <div class="ui card">
+          <div class="content">
+            <div class="center aligned header">New table</div>
+          </div>
+          <div class="content">
+            <div class="center aligned description">
+              No Limit Texas Hold'em
+            </div>
+          </div>
+          <div class="content">
+            <div class="description">
+              <div class="ui form">
+                <div class="grouped fields">
+                  <label>Select blinds level:</label>
+                  <div class="field">
+                    <div class="ui slider checkbox">
+                      <input type="radio" name="blinds" data-bb="2" checked="checked">
+                      <label>Blinds: 1/2. Minimum 80 / Maximum 300.</label>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <div class="ui slider checkbox">
+                      <input type="radio" name="blinds" data-bb="4">
+                      <label>Blinds: 2/4. Minimum 160 / Maximum 600.</label>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <div class="ui slider checkbox">
+                      <input type="radio" name="blinds" data-bb="6">
+                      <label>Blinds: 3/6. Minimum 240 / Maximum 900.</label>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <div class="ui slider checkbox">
+                      <input type="radio" name="blinds" data-bb="10">
+                      <label>Blinds: 5/10. Minimum 400 / Maximum 1500.</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="content">
+            <div class="center aligned description">
+              <div class="ui input">
+                <button class="ui icon attached button" id="start-minus">
+                  <i class="minus icon"></i>
+                </button>
+                <input type="number" value="80" data-bb="2" id="start-buyin">
+                <button class="ui icon attached button" id="start-plus">
+                  <i class="plus icon"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="extra content">
+            <button class="ui fluid button">Create table</button>
           </div>
         </div>
       </div>

@@ -294,3 +294,48 @@ $('#reset-bal').click(function() {
     }
   }
 });
+//Event for menu selection
+$('#player-menu').click(function(event) {
+  $('#player-menu .active').removeClass('active');
+  event.target.classList.add('active');
+  switch(event.target.textContent) {
+    case 'Home':
+      $('#info').removeClass('hide');
+      $('#new-table').addClass('hide');
+      break;
+    case 'New table':
+      $('#info').addClass('hide');
+      $('#new-table').removeClass('hide');
+      break;
+    case 'Join table':
+      break;
+    case 'Past sessions':
+      break;
+  }
+});
+//Event of blinds selection
+$("input[name='blinds']").change(function(event) {
+  $('#start-buyin').attr('data-bb', event.target.getAttribute('data-bb')).val(Number(event.target.getAttribute('data-bb') * 40));
+});
+//Events for plus / minus buttons
+$('#start-plus').click(function() {
+  var bb = $('#start-buyin').attr('data-bb');
+  var value = Number($('#start-buyin').val().trim()) + Number(bb);
+  if (value > bb * 150) {
+    $('#start-buyin').val(Number(bb) * 150);
+  }
+  else {
+    $('#start-buyin').val(value);
+  }
+});
+
+$('#start-minus').click(function() {
+  var bb = $('#start-buyin').attr('data-bb');
+  var value = Number($('#start-buyin').val().trim()) - Number(bb);
+  if (value < bb * 40) {
+    $('#start-buyin').val(Number(bb) * 40);
+  }
+  else {
+    $('#start-buyin').val(value);
+  }
+});
