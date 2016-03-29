@@ -9,12 +9,19 @@ app.use(express.static(__dirname + '/public'));
 
 var users;
 //function to read users file
-(function readUsers() {
+(function() {
   fs.readFile('./users.json', function(err, data) {
     if (err) throw err;
     users = JSON.parse(data.toString());
   });
 })();
+//function to write input to file
+function updateFile(str) {
+  var file = './' + str + '.json';
+  fs.writeFile(file, JSON.stringify(users), function(err) {
+    if (err) throw err;
+  })
+}
 //User constructor
 function User(pwd) {
   this.firstname = "";
@@ -22,6 +29,7 @@ function User(pwd) {
   this.pwd = pwd;
   this.bankroll = 500;
   this.session = "";
+  this.location = "";
 }
 //check logged in user route
 app.get('/check', function(req, res) {
@@ -29,7 +37,10 @@ app.get('/check', function(req, res) {
     if (users[key].session == req.cookies.session) {
       var payload = {
         name: key,
-        balance: users[key].bankroll
+        balance: users[key].bankroll,
+        first: users[key].firstname,
+        last: users[key].lastname,
+        loc: users[key].location
       }
     }
   }
@@ -45,13 +56,14 @@ app.post('/login', jsonParser, function(req, res) {
   if (users.hasOwnProperty(req.body.username)) {
     if (users[req.body.username].pwd === req.body.pwd) {
       users[req.body.username].session = Math.floor(Math.random() * 1000000);
-      fs.writeFile('./users.json', JSON.stringify(users), function(err) {
-        if (err) throw err;
-      })
+      updateFile('users');
       res.cookie("session", users[req.body.username].session);
       var payload = {
         name: req.body.username,
-        balance: users[req.body.username].bankroll
+        balance: users[req.body.username].bankroll,
+        first: users[req.body.username].firstname,
+        last: users[req.body.username].lastname,
+        loc: users[req.body.username].location
       };
       res.status(200).json(payload);
     }
@@ -66,9 +78,7 @@ app.post('/login', jsonParser, function(req, res) {
 //signup route
 app.post('/signup', jsonParser, function(req, res) {
   users[req.body.username] = new User(req.body.pwd);
-  fs.writeFile('./users.json', JSON.stringify(users), function(err) {
-    if (err) throw err;
-  })
+  updateFile('users');
   var payload = {
     name: req.body.username,
     pwd: req.body.pwd
@@ -78,14 +88,24 @@ app.post('/signup', jsonParser, function(req, res) {
 //logout route
 app.get('/logout', function(req, res) {
   res.clearCookie('session');
-  fs.writeFile('./users.json', JSON.stringify(users), function(err) {
-    if (err) throw err;
-  })
+  updateFile('users');
   res.send();
+});
+//Update information route
+app.post('/update/:name', jsonParser, function(req, res) {
+  if (users[req.params.name].session == req.cookies.session) {
+    for (key in req.body) {
+      users[req.params.name][key] = req.body[key];
+    }
+    updateFile('users');
+    res.sendStatus(200);
+  }
+  else {
+    res.sendStatus(403);
+  }
 });
 //checking for existing user name
 app.get('/checkuser/:name', function(req, res) {
-  console.log();
   if (!users.hasOwnProperty(req.params.name)) {
     res.sendStatus(200);
   }

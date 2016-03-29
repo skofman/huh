@@ -30,6 +30,12 @@ $('#login').submit(function(event) {
       $('#user-status').removeClass('hide');
       var data = JSON.parse(xhr.response);
       $('#user-status p').text('Welcome, ' + data.name + '! Balance: ' + data.balance);
+      $('#dash-user h5').text(data.name + ' ');
+      $('#dash-balance h5').text(data.balance + ' ');
+      $('#dash-first h5').text(data.first + ' ');
+      $('#dash-last h5').text(data.last + ' ');
+      $('#dash-loc h5').text(data.loc + ' ');
+      $('#main').removeClass('hide');
     }
     else {
       $('#login-message p').text(xhr.responseText);
@@ -54,6 +60,12 @@ $('#login').submit(function(event) {
       $('#user-status').removeClass('hide');
       var data = JSON.parse(xhr.response);
       $('#user-status p').text('Welcome, ' + data.name + '! Balance: ' + data.balance);
+      $('#dash-user h5').text(data.name + ' ');
+      $('#dash-balance h5').text(data.balance + ' ');
+      $('#dash-first h5').text(data.first + ' ');
+      $('#dash-last h5').text(data.last + ' ');
+      $('#dash-loc h5').text(data.loc + ' ');
+      $('#main').removeClass('hide');
     }
   }
 })();
@@ -99,6 +111,7 @@ $('#logout').click(function() {
     $('#show-signup').removeClass('hide');
     $('#logout').addClass('hide');
     $('#user-status').addClass('hide');
+    $('#main').addClass('hide');
   }
 });
 //event listener for choosing a username
@@ -135,5 +148,149 @@ $('#new-pwd').keyup(function() {
   else {
     $('#pwd-input').removeClass('check').addClass('remove').css('color','red');
     $('#signup-message p:last').removeClass('hide');
+  }
+});
+//event listener for updating user info
+$('#info').click(function(event) {
+  switch(event.target.id) {
+    case 'edit-first':
+      $('#dash-first h5').addClass('hide');
+      $('#edit-first').addClass('hide');
+      $('#dash-first div').removeClass('hide');
+      $('#dash-first button').removeClass('hide');
+      break;
+    case 'edit-last':
+      $('#dash-last h5').addClass('hide');
+      $('#edit-last').addClass('hide');
+      $('#dash-last div').removeClass('hide');
+      $('#dash-last button').removeClass('hide');
+      break;
+    case 'edit-loc':
+      $('#dash-loc h5').addClass('hide');
+      $('#edit-loc').addClass('hide');
+      $('#dash-loc div').removeClass('hide');
+      $('#dash-loc button').removeClass('hide');
+      break;
+    case 'close-first':
+      $('#dash-first h5').removeClass('hide');
+      $('#edit-first').removeClass('hide');
+      $('#dash-first div').addClass('hide');
+      $('#dash-first button').addClass('hide');
+      break;
+    case 'close-last':
+      $('#dash-last h5').removeClass('hide');
+      $('#edit-last').removeClass('hide');
+      $('#dash-last div').addClass('hide');
+      $('#dash-last button').addClass('hide');
+      break;
+    case 'close-loc':
+      $('#dash-loc h5').removeClass('hide');
+      $('#edit-loc').removeClass('hide');
+      $('#dash-loc div').addClass('hide');
+      $('#dash-loc button').addClass('hide');
+      break;
+  }
+});
+//Event listeners for updating user info
+$('#input-first').keypress(function(event) {
+  if (event.charCode === 13) {
+    var path = '/update/' + $('#dash-user h5').text().trim();
+    var payload = JSON.stringify({
+      firstname: $('#input-first').val()
+    });
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('POST', path);
+    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.send(payload);
+
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        $('#dash-first h5').text($('#input-first').val() + " ");
+        $('#input-first').val('');
+        $('#dash-first h5').removeClass('hide');
+        $('#edit-first').removeClass('hide');
+        $('#dash-first div').addClass('hide');
+        $('#dash-first button').addClass('hide');
+      }
+    }
+  }
+});
+
+$('#input-last').keypress(function(event) {
+  if (event.charCode === 13) {
+    var path = '/update/' + $('#dash-user h5').text().trim();
+    var payload = JSON.stringify({
+      lastname: $('#input-last').val()
+    });
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('POST', path);
+    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.send(payload);
+
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        $('#dash-last h5').text($('#input-last').val() + " ");
+        $('#input-last').val('');
+        $('#dash-last h5').removeClass('hide');
+        $('#edit-last').removeClass('hide');
+        $('#dash-last div').addClass('hide');
+        $('#dash-last button').addClass('hide');
+      }
+    }
+  }
+});
+
+$('#input-loc').keypress(function(event) {
+  if (event.charCode === 13) {
+    var path = '/update/' + $('#dash-user h5').text().trim();
+    var payload = JSON.stringify({
+      location: $('#input-loc').val()
+    });
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('POST', path);
+    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.send(payload);
+
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        $('#dash-loc h5').text($('#input-loc').val() + " ");
+        $('#input-loc').val('');
+        $('#dash-loc h5').removeClass('hide');
+        $('#edit-loc').removeClass('hide');
+        $('#dash-loc div').addClass('hide');
+        $('#dash-loc button').addClass('hide');
+      }
+    }
+  }
+});
+//Event for balance reset
+$('#reset-bal').click(function() {
+  if (confirm('Are you sure?')) {
+    var path = '/update/' + $('#dash-user h5').text().trim();
+    var payload = JSON.stringify({
+      bankroll: 500
+    });
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('POST', path);
+    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.send(payload);
+
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        var message = $('#user-status p').text();
+        var oldBalance = $('#dash-balance h5').text().trim();
+        var updateMsg = message.replace(oldBalance, '500');
+        $('#user-status p').text(updateMsg);
+        $('#dash-balance h5').text('500 ');
+      }
+    }
   }
 });

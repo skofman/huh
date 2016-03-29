@@ -27,3 +27,24 @@
   padding-left: 5px !important;
   padding-right: 5px !important;
 }
+
+#dash-user h5,
+#dash-balance h5,
+#dash-first h5,
+#dash-last h5,
+#dash-loc h5 {
+  display: inline;
+}
+
+.edit.icon:hover {
+  cursor: pointer;
+}
+
+#info div h1 {
+  display: inline;
+  margin-bottom: 0;
+}
+
+#info div button {
+  margin-left: 15px;
+}

@@ -4,7 +4,7 @@
   <title>Heads Up Holdem</title>
 
   <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
-  <link rel="stylesheet" href="css/style.css"></link>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <!-- Front page menu-->
@@ -73,6 +73,95 @@
       <div class="ui message" id="signup-message">
         <p>Your username must be at least 3 characters</p>
         <p>Your password must be at least 3 characters</p>
+      </div>
+    </div>
+  </div>
+  <!-- Player page -->
+  <div class="ui grid hide" id="main">
+    <div class="one wide column"></div>
+    <!-- Player menu -->
+    <div class="three wide column">
+      <div class="ui vertical pointing menu">
+        <a class="active item">Home</a>
+        <a class="item">New table</a>
+        <a class="item">Join table</a>
+        <a class="item">Past sessions</a>
+      </div>
+    </div>
+    <!-- Main screen -->
+    <div class="eleven wide column">
+      <!-- Player information -->
+      <div class="row" id="info">
+        <div class="ui segment">
+          <h1>Player information</h1>
+          <button type="button" id="reset-bal" class="ui compact blue button">Reset balance</button>
+          <hr>
+          <div class="ui grid">
+            <div class="row">
+              <div class="four wide column">
+                <h5>Username:</h5>
+              </div>
+              <div class="eight wide column" id="dash-user">
+                <h5></h5>
+                <i class="lock icon"></i>
+              </div>
+            </div>
+            <div class="row">
+              <div class="four wide column">
+                <h5>Balance:</h5>
+              </div>
+              <div class="eight wide column" id="dash-balance">
+                <h5></h5>
+                <i class="lock icon"></i>
+              </div>
+            </div>
+            <div class="row">
+              <div class="four wide column">
+                <h5>First name:</h5>
+              </div>
+              <div class="eight wide column" id="dash-first">
+                <h5></h5>
+                <i class="edit icon" id="edit-first"></i>
+                <div class="ui input hide">
+                  <input class="ui input" id="input-first" type="text" placeholder="First Name">
+                </div>
+                <button class="ui icon button hide" id="close-first">
+                  <i class="remove icon"></i>
+                </button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="four wide column">
+                <h5>Last name:</h5>
+              </div>
+              <div class="eight wide column" id="dash-last">
+                <h5></h5>
+                <i class="edit icon" id="edit-last"></i>
+                <div class="ui input hide">
+                  <input class="ui input" id="input-last" type="text" placeholder="Last Name">
+                </div>
+                <button class="ui icon button hide" id="close-last">
+                  <i class="remove icon"></i>
+                </button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="four wide column">
+                <h5>Location:</h5>
+              </div>
+              <div class="eight wide column" id="dash-loc">
+                <h5></h5>
+                <i class="edit icon" id="edit-loc"></i>
+                <div class="ui input hide">
+                  <input class="ui input" id="input-loc" type="text" placeholder="Location">
+                </div>
+                <button class="ui icon button hide" id="close-loc">
+                  <i class="remove icon"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
