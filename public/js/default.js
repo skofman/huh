@@ -213,6 +213,7 @@ $('#logout').click(function() {
     $('#logout').addClass('hide');
     $('#user-status').addClass('hide');
     $('#main').addClass('hide');
+    $('#remove').click();
   }
 });
 //event listener for choosing a username
