@@ -51,11 +51,19 @@ function User(pwd) {
 function Table(player, bb) {
   this.status = 'waiting',
   this.first = {
-    player: player
+    player: player,
+    action: "",
+    amount: "",
+    dealer: true
   },
-  this.second = "",
+  this.second = {
+    action: "",
+    amount: "",
+    dealer: false
+  },
   this.bb = bb,
-  this.stage = ""
+  this.stage = "",
+  this.turn = ""
 }
 //check logged in user route
 app.get('/check', function(req, res) {
@@ -168,10 +176,44 @@ io.on('connection', function(socket) {
     io.emit('post tables', tables);
   });
   socket.on('join table', function(data) {
-    console.log(data);
-    io.emit('start game', {});
+    tables[data.table].second.player = data.player;
+    tables[data.table].second.stack = data.buyin;
+    tables[data.table].status = 'ready';
+    tables[data.table].stage = 'pre';
+    var first = {
+      status: tables[data.table].status,
+      dealer: tables[data.table].first.dealer,
+      bb: tables[data.table].bb,
+      stack: tables[data.table].first.stack,
+      opp: {
+        name: tables[data.table].second.player,
+        stack: tables[data.table].second.stack
+      }
+    }
+    var second = {
+      status: tables[data.table].status,
+      dealer: tables[data.table].second.dealer,
+      bb: tables[data.table].bb,
+      stack: tables[data.table].second.stack,
+      opp: {
+        name: tables[data.table].first.player,
+        stack: tables[data.table].first.stack
+      }
+    }
+    var firstCall = tables[data.table].first.player;
+    var secondCall = tables[data.table].second.player;
+    io.emit(tables[data.table].first.player, first);
+    io.emit(tables[data.table].second.player, second);
   });
 })
+//Route of getting the active user
+app.get('/username', function(req, res) {
+  for (name in users) {
+    if (users[name].session == req.cookies.session) {
+      res.send(name);
+    }
+  }
+});
 //Server listener
 server.listen(8080, function() {
   console.log('Listening on port 8080');

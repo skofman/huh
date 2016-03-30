@@ -85,6 +85,7 @@
         <a class="active item">Home</a>
         <a class="item">Your table</a>
         <a class="item">Join table</a>
+        <a class="item">Active game</a>
         <a class="item">Past sessions</a>
       </div>
     </div>
@@ -246,6 +247,39 @@
       <!-- Active tables tab -->
       <div class="row hide" id="join-table">
         <div class="ui grid container" id="game-grid"></div>
+      </div>
+      <!-- Active game tab -->
+      <div class="hide" id="active-game">
+        <div class="sixteen wide column" id="table">
+          <div class="wrapper">
+            <img src="images/table2.jpg" id="table-img">
+            <div id="player">
+              <p></p>
+              <p></p>
+            </div>
+            <div id="opponent">
+              <p></p>
+              <p></p>
+            </div>
+            <img class="hide" id="player-card1" src="">
+            <img class="hide" id="player-card2" src="">
+            <img class="hide" id="opp-card1" src="">
+            <img class="hide" id="opp-card2" src="">
+            <img class="hide" id="com-card1" src="">
+            <img class="hide" id="com-card2" src="">
+            <img class="hide" id="com-card3" src="">
+            <img class="hide" id="com-card4" src="">
+            <img class="hide" id="com-card5" src="">
+            <button type="button" class="ui default large button hide" id="down">Fold</button>
+            <button type="button" class="ui default large button hide" id="even">Call</button>
+            <button type="button" class="ui default large button hide" id="up">Bet</button>
+            <div id="pot">
+              <h6>POT</h6>
+              <h5>0</h5>
+            </div>
+            <img id="dealer" src="images/btn.svg">
+          </div>
+        </div>
       </div>
     </div>
   </div>

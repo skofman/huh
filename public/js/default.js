@@ -1,4 +1,5 @@
 var socket = io.connect('http://localhost:8080');
+var username = "";
 
 $('#show-login').click(function() {
   $('#login-form').removeClass('hide');
@@ -33,6 +34,7 @@ $('#login').submit(function(event) {
       var data = JSON.parse(xhr.response);
       $('#user-status p').text('Welcome, ' + data.name + '! Balance: ' + data.balance);
       $('#dash-user h5').text(data.name + ' ');
+      username = data.name;
       $('#dash-balance h5').text(data.balance + ' ');
       $('#dash-first h5').text(data.first + ' ');
       $('#dash-last h5').text(data.last + ' ');
@@ -108,6 +110,7 @@ $('#login').submit(function(event) {
       var data = JSON.parse(xhr.response);
       $('#user-status p').text('Welcome, ' + data.name + '! Balance: ' + data.balance);
       $('#dash-user h5').text(data.name + ' ');
+      username = data.name;
       $('#dash-balance h5').text(data.balance + ' ');
       $('#dash-first h5').text(data.first + ' ');
       $('#dash-last h5').text(data.last + ' ');
@@ -296,7 +299,7 @@ $('#info').click(function(event) {
 //Event listeners for updating user info
 $('#input-first').keypress(function(event) {
   if (event.charCode === 13) {
-    var path = '/update/' + $('#dash-user h5').text().trim();
+    var path = '/update/' + username;
     var payload = JSON.stringify({
       firstname: $('#input-first').val()
     });
@@ -322,7 +325,7 @@ $('#input-first').keypress(function(event) {
 
 $('#input-last').keypress(function(event) {
   if (event.charCode === 13) {
-    var path = '/update/' + $('#dash-user h5').text().trim();
+    var path = '/update/' + username;
     var payload = JSON.stringify({
       lastname: $('#input-last').val()
     });
@@ -374,7 +377,7 @@ $('#input-loc').keypress(function(event) {
 //Event for balance reset
 $('#reset-bal').click(function() {
   if (confirm('Are you sure?')) {
-    var path = '/update/' + $('#dash-user h5').text().trim();
+    var path = '/update/' + username;
     var payload = JSON.stringify({
       bankroll: 500
     });
@@ -405,16 +408,25 @@ $('#player-menu').click(function(event) {
       $('#info').removeClass('hide');
       $('#new-table').addClass('hide');
       $('#join-table').addClass('hide');
+      $('#active-game').addClass('hide');
       break;
     case 'Your table':
       $('#info').addClass('hide');
       $('#new-table').removeClass('hide');
       $('#join-table').addClass('hide');
+      $('#active-game').addClass('hide');
       break;
     case 'Join table':
       $('#info').addClass('hide');
       $('#new-table').addClass('hide');
       $('#join-table').removeClass('hide');
+      $('#active-game').addClass('hide');
+      break;
+    case 'Active game':
+      $('#active-game').removeClass('hide');
+      $('#new-table').addClass('hide');
+      $('#join-table').addClass('hide');
+      $('#info').addClass('hide');
       break;
     case 'Past sessions':
       break;
@@ -464,7 +476,7 @@ $('#create').click(function() {
   }
 
   var data = {
-    player: $('#dash-user h5').text().trim(),
+    player: username,
     bb: $('#start-buyin').attr('data-bb'),
     buyin: $('#start-buyin').val()
   };
@@ -570,6 +582,31 @@ $('#game-grid').click(function(event) {
   }
 });
 //Starting game socket emitter
-socket.on('start game', function(data) {
-  console.log('game on!');
-})
+var promise = new Promise(function(resolve, reject) {
+  var xhr = new XMLHttpRequest();
+
+  xhr.open('GET', '/username');
+  xhr.send();
+
+  xhr.onload = function() {
+    resolve(xhr.responseText);
+  }
+});
+promise.then(function(value) {
+  username = value;
+  socket.on(username, function(data) {
+    if (data.status === 'ready') {
+      $('#player p:first').text(username);
+      $('#player p:last').text(data.stack);
+      $('#opponent p:first').text(data.opp.name);
+      $('#opponent p:last').text(data.opp.stack);
+      if (!data.dealer) {
+        $('#dealer').css('left','700px');
+        $('#up').text('Post SB').removeClass('hide');
+      }
+      else {
+        $('#up').text('Post BB').removeClass('hide');
+      }
+    }
+  });
+});
