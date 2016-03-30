@@ -39,7 +39,6 @@ $('#login').submit(function(event) {
       $('#dash-loc h5').text(data.loc + ' ');
       $('#main').removeClass('hide');
       //create active table
-      console.log(data.tables);
       for (key in data.tables) {
         var col = document.createElement('div');
         var card = document.createElement('div');
@@ -50,25 +49,39 @@ $('#login').submit(function(event) {
         var infoContent = document.createElement('div');
         var playerName = document.createElement('div');
         var gameInfo = document.createElement('div');
+        var gameNote = document.createElement('div');
+        var blindContent = document.createElement('div');
+        var amount = document.createElement('div');
+        var inputBox = document.createElement('div');
+        var label = document.createElement('p');
+        var input = document.createElement('input');
         var btnContent = document.createElement('div');
         var btn = document.createElement('button');
 
         $(col).addClass('four wide column').appendTo('#game-grid');
         $(card).addClass('ui card').appendTo(col);
         $(nameContent).addClass('content').appendTo(card);
-        $(name).addClass('center aligned header').text(key).appendTo(nameContent);
+        var idName = key + '-name';
+        $(name).addClass('center aligned header').attr('id', idName).text(key).appendTo(nameContent);
         $(gameContent).addClass('content').appendTo(card);
         $(game).addClass('center aligned description').text("No Limit Texas Hold'em").appendTo(gameContent);
         $(infoContent).addClass('content').appendTo(card);
         $(playerName).addClass('description').text('Player: ' + data.tables[key].first.player).appendTo(infoContent);
-        $(gameInfo).addClass('description').text('Blinds: ' + Number(data.tables[key].bb) / 2 + ' / ' + data.tables[key].bb + '.').appendTo(infoContent);
+        $(gameInfo).addClass('description').text('Blinds: ' + Number(data.tables[key].bb) / 2 + ' / ' + data.tables[key].bb).appendTo(infoContent);
+        $(gameNote).addClass('description').text('Minimum: ' + Number(data.tables[key].bb) * 40 + ' / Maximum: ' + Number(data.tables[key].bb) * 150).appendTo(infoContent);
+        $(blindContent).addClass('content').appendTo(card);
+        $(amount).addClass('center aligned description').appendTo(blindContent);
+        $(label).text('Enter your buy-in amount').appendTo(amount);
+        $(inputBox).addClass('ui fluid input').appendTo(amount);
+        var idValue = key + '-val';
+        $(input).attr({type: 'number', 'data-bb': data.tables[key].bb, id: idValue}).appendTo(inputBox);
         $(btnContent).addClass('extra content').appendTo(card);
         switch(data.tables[key].status) {
           case 'waiting':
             var text = 'Join table';
+            $(btn).addClass('ui fluid button').text(text).attr('id',key).appendTo(btnContent);
             break;
         }
-        $(btn).addClass('ui fluid button').text(text).appendTo(btnContent);
       }
     }
     else {
@@ -100,6 +113,60 @@ $('#login').submit(function(event) {
       $('#dash-last h5').text(data.last + ' ');
       $('#dash-loc h5').text(data.loc + ' ');
       $('#main').removeClass('hide');
+      //create active tables
+      for (key in data.tables) {
+        if (data.tables[key].first.player != $('#dash-user').text().trim()) {
+          var col = document.createElement('div');
+          var card = document.createElement('div');
+          var nameContent = document.createElement('div');
+          var name = document.createElement('div');
+          var gameContent = document.createElement('div');
+          var game = document.createElement('div');
+          var infoContent = document.createElement('div');
+          var playerName = document.createElement('div');
+          var gameInfo = document.createElement('div');
+          var gameNote = document.createElement('div');
+          var blindContent = document.createElement('div');
+          var amount = document.createElement('div');
+          var inputBox = document.createElement('div');
+          var label = document.createElement('p');
+          var input = document.createElement('input');
+          var btnContent = document.createElement('div');
+          var btn = document.createElement('button');
+
+          $(col).addClass('four wide column').appendTo('#game-grid');
+          $(card).addClass('ui card').appendTo(col);
+          $(nameContent).addClass('content').appendTo(card);
+          var idName = key + '-name';
+          $(name).addClass('center aligned header').attr('id', idName).text(key).appendTo(nameContent);
+          $(gameContent).addClass('content').appendTo(card);
+          $(game).addClass('center aligned description').text("No Limit Texas Hold'em").appendTo(gameContent);
+          $(infoContent).addClass('content').appendTo(card);
+          $(playerName).addClass('description').text('Player: ' + data.tables[key].first.player).appendTo(infoContent);
+          $(gameInfo).addClass('description').text('Blinds: ' + Number(data.tables[key].bb) / 2 + ' / ' + data.tables[key].bb).appendTo(infoContent);
+          $(gameNote).addClass('description').text('Minimum: ' + Number(data.tables[key].bb) * 40 + ' / Maximum: ' + Number(data.tables[key].bb) * 150).appendTo(infoContent);
+          $(blindContent).addClass('content').appendTo(card);
+          $(amount).addClass('center aligned description').appendTo(blindContent);
+          $(label).text('Enter your buy-in amount').appendTo(amount);
+          $(inputBox).addClass('ui fluid input').appendTo(amount);
+          var idValue = key + '-val';
+          $(input).attr({type: 'number', 'data-bb': data.tables[key].bb, id: idValue}).appendTo(inputBox);
+          $(btnContent).addClass('extra content').appendTo(card);
+          switch(data.tables[key].status) {
+            case 'waiting':
+              var text = 'Join table';
+              $(btn).addClass('ui fluid button').text(text).attr('id',key).appendTo(btnContent);
+              break;
+          }
+        }
+        else {
+          $('#table-name').text(key);
+          var info = 'Blinds: ' + Number(data.tables[key].bb) / 2 + ' / ' + data.tables[key].bb + ' -  Stack: ' + data.tables[key].first.stack;
+          $('#table-info').text(info);
+          $('#create-card').addClass('hide');
+          $('#remove-card').removeClass('hide');
+        }
+      }
     }
   }
 })();
@@ -338,7 +405,7 @@ $('#player-menu').click(function(event) {
       $('#new-table').addClass('hide');
       $('#join-table').addClass('hide');
       break;
-    case 'New table':
+    case 'Your table':
       $('#info').addClass('hide');
       $('#new-table').removeClass('hide');
       $('#join-table').addClass('hide');
@@ -427,5 +494,81 @@ $('#remove').click(function() {
 });
 //Populating existing tables
 socket.on('post tables', function(data) {
-  console.log(data);
+  $('#game-grid div').remove();
+  for (key in data) {
+    if (data[key].first.player != $('#dash-user').text().trim()) {
+      var col = document.createElement('div');
+      var card = document.createElement('div');
+      var nameContent = document.createElement('div');
+      var name = document.createElement('div');
+      var gameContent = document.createElement('div');
+      var game = document.createElement('div');
+      var infoContent = document.createElement('div');
+      var playerName = document.createElement('div');
+      var gameInfo = document.createElement('div');
+      var gameNote = document.createElement('div');
+      var blindContent = document.createElement('div');
+      var amount = document.createElement('div');
+      var inputBox = document.createElement('div');
+      var label = document.createElement('p');
+      var input = document.createElement('input');
+      var btnContent = document.createElement('div');
+      var btn = document.createElement('button');
+
+      $(col).addClass('four wide column').appendTo('#game-grid');
+      $(card).addClass('ui card').appendTo(col);
+      $(nameContent).addClass('content').appendTo(card);
+      var idName = key + '-name';
+      $(name).addClass('center aligned header').attr('id', idName).text(key).appendTo(nameContent);
+      $(gameContent).addClass('content').appendTo(card);
+      $(game).addClass('center aligned description').text("No Limit Texas Hold'em").appendTo(gameContent);
+      $(infoContent).addClass('content').appendTo(card);
+      $(playerName).addClass('description').text('Player: ' + data[key].first.player).appendTo(infoContent);
+      $(gameInfo).addClass('description').text('Blinds: ' + Number(data[key].bb) / 2 + ' / ' + data[key].bb).appendTo(infoContent);
+      $(gameNote).addClass('description').text('Minimum: ' + Number(data[key].bb) * 40 + ' / Maximum: ' + Number(data[key].bb) * 150).appendTo(infoContent);
+      $(blindContent).addClass('content').appendTo(card);
+      $(amount).addClass('center aligned description').appendTo(blindContent);
+      $(label).text('Enter your buy-in amount').appendTo(amount);
+      $(inputBox).addClass('ui fluid input').appendTo(amount);
+      var idValue = key + '-val';
+      $(input).attr({type: 'number', 'data-bb': data[key].bb, id: idValue}).appendTo(inputBox);
+      $(btnContent).addClass('extra content').appendTo(card);
+      switch(data[key].status) {
+        case 'waiting':
+          var text = 'Join table';
+          $(btn).addClass('ui fluid button').text(text).attr('id',key).appendTo(btnContent);
+          break;
+      }
+    }
+  }
 });
+//Event joining table
+$('#game-grid').click(function(event) {
+  var nameSelector = '#' + event.target.id + '-name';
+  if (event.target.id === $(nameSelector).text() && event.target.id != "") {
+    var valueSelector = '#' + event.target.id + '-val';
+    var bb = Number($(valueSelector).attr('data-bb'));
+    if ($(valueSelector).val() < 40 * bb) {
+      alert('Minimum buy-in is ' + 40 * bb);
+      return;
+    }
+    else if ($(valueSelector).val() > 150 * bb) {
+      alert('Maximum buy-in is ' + 150 * bb);
+      return;
+    }
+    else if ($(valueSelector).val() > Number($('#dash-balance').text().trim())) {
+      alert("You don't have sufficient funds");
+      return;
+    }
+    var payload = {
+      table: event.target.id,
+      player: $('#dash-user').text().trim(),
+      buyin: $(valueSelector).val()
+    }
+    socket.emit('join table', payload)
+  }
+});
+//Starting game socket emitter
+socket.on('start game', function(data) {
+  console.log('game on!');
+})

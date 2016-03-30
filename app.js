@@ -20,7 +20,7 @@ var tableNames = ['jungle','forest','sea','ocean','mountain'];
   });
   fs.readFile('./tables.json', 'utf8', function(err, data) {
     tables = JSON.parse(data);
-  })
+  });
 })();
 //function to write input to file
 function updateFile(str) {
@@ -66,7 +66,8 @@ app.get('/check', function(req, res) {
         balance: users[key].bankroll,
         first: users[key].firstname,
         last: users[key].lastname,
-        loc: users[key].location
+        loc: users[key].location,
+        tables: tables
       }
     }
   }
@@ -165,6 +166,10 @@ io.on('connection', function(socket) {
     updateFile('tables');
     socket.emit('my table', {status: 'remove'});
     io.emit('post tables', tables);
+  });
+  socket.on('join table', function(data) {
+    console.log(data);
+    io.emit('start game', {});
   });
 })
 //Server listener
