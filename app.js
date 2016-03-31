@@ -442,6 +442,38 @@ io.on('connection', function(socket) {
           io.emit(table.first.player, update);
         }
         break;
+      case 'check':
+        switch(table.stage) {
+          case 'pre':
+            var update = {
+              stage: table.stage,
+              action: 'check',
+            }
+            if (table.first.player == data.player) {
+              io.emit(table.second.player, update);
+            }
+            else {
+              io.emit(table.first.player, update);
+            }
+            table.stage = 'flop';
+            table.deal();
+            var first = {
+              stage: table.stage,
+              action: 'deal flop',
+              cards: table.community,
+              dealer: table.first.dealer
+            }
+            var second = {
+              stage: table.stage,
+              action: 'deal flop',
+              cards: table.community,
+              dealer: table.second.dealer
+            }
+            io.emit(table.first.player, first);
+            io.emit(table.second.player, second);
+            break;
+        }
+        break;
     }
   });
 })

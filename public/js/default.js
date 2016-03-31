@@ -723,7 +723,7 @@ promise.then(function(value) {
             $('#down').removeClass('hide');
             var bb = Number($('#table').attr('data-bb'));
             $('#up').text('Bet ' + bb).removeClass('hide');
-            $('#even').text('Check').removeClass('hide');
+            $('#even').text('Check').attr('data-action','close').removeClass('hide');
             break;
           case 'raise':
             $('#pot h5').text(data.pot);
@@ -743,6 +743,9 @@ promise.then(function(value) {
             var bet = Number($('#opp-bet').text());
             $('#opp-bet').text(bet + data.amount);
             break;
+          case 'check':
+            
+            break;
         }
         break;
       case 'flop':
@@ -752,7 +755,7 @@ promise.then(function(value) {
             $('#player-bet').text('0');
             if (!data.dealer) {
               $('#down').removeClass('hide');
-              $('#even').text('Check').removeClass('hide');
+              $('#even').text('Check').attr('data-action','open').removeClass('hide');
               var bb = $('#table').attr('data-bb');
               $('#up').text('Bet ' + bb).removeClass('hide');
             }
@@ -836,11 +839,11 @@ $('#even').click(function() {
   $('#up').addClass('hide');
   $('#down').addClass('hide');
   $('#even').addClass('hide');
-  var stack = Number($('#player p:last').text()) - Number(array[1]);
-  var pot = Number($('#pot h5').text()) + Number(array[1]);
-  $('#player p:last').text(stack);
-  $('#pot h5').text(pot);
   if (array[0] === 'Call') {
+    var stack = Number($('#player p:last').text()) - Number(array[1]);
+    var pot = Number($('#pot h5').text()) + Number(array[1]);
+    $('#player p:last').text(stack);
+    $('#pot h5').text(pot);
     var payload = {
       table: $('#table').attr('data-table'),
       stage: 'call',
@@ -849,6 +852,18 @@ $('#even').click(function() {
     }
     var bet = Number($('#player-bet').text());
     $('#player-bet').text(bet + payload.amount);
+  }
+  else {
+    var payload = {
+      table: $('#table').attr('data-table'),
+      stage: 'check',
+      action: $('#even').attr('data-action'),
+      player: username
+    }
+    if (payload.action === 'close') {
+      $('#player-bet').text('0');
+      $('#opp-bet').text('0');
+    }
   }
   socket.emit('play', payload);
 });
