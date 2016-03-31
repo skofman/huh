@@ -615,10 +615,13 @@ promise.then(function(value) {
             $('#table').attr({'data-bb': data.bb, 'data-table': data.table});
             break;
           case 'update':
+            $('#opp-bet').text(data.amount);
             $('#player p:last').text(data.pstack);
             $('#opponent p:last').text(data.oppstack);
             $('#pot h5').text(data.pot);
             if (data.hide) {
+              $('#player-bet').text('0');
+              $('#opp-bet').text('0');
               $('#player-card1').css({top: '-715px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
               $('#player-card2').css({top: '-715px', left: '93px'}).attr('src','images/red.svg').addClass('hide');
               $('#opp-card1').css({top: '-715px', left: '-129px'}).addClass('hide');
@@ -709,10 +712,24 @@ promise.then(function(value) {
           case 'firstcall':
             $('#pot h5').text(data.pot);
             $('#opponent p:last').text(data.oppstack);
+            var bet = Number($('#opp-bet').text());
+            $('#opp-bet').text(bet + data.amount);
             $('#down').removeClass('hide');
             var bb = Number($('#table').attr('data-bb'));
             $('#up').text('Bet ' + bb).removeClass('hide');
             $('#even').text('Check').removeClass('hide');
+            break;
+          case 'raise':
+            $('#pot h5').text(data.pot);
+            $('#opponent p:last').text(data.oppstack);
+            var bet = Number($('#opp-bet').text());
+            $('#opp-bet').text(bet + data.amount);
+            $('#down').removeClass('hide');
+            var call = Number($('#opp-bet').text()) - Number($('#player-bet').text());
+            $('#even').text('Call ' + call).removeClass('hide');
+            var bb = Number($('#table').attr('data-bb'));
+            var raise = Number($('#opp-bet').text()) + bb;
+            $('#up').text('Raise to ' + raise).removeClass('hide');
             break;
         }
         break;
@@ -741,6 +758,24 @@ $('#up').click(function(event) {
       $('#pot h5').text(Number(pot) + payload.amount);
       var stack = $('#player p:last').text();
       $('#player p:last').text(Number(stack) - payload.amount);
+      $('#player-bet').text(payload.amount);
+      socket.emit('play', payload);
+      break;
+    case 'Raise':
+      $('#down').addClass('hide');
+      $('#even').addClass('hide');
+      var pot = Number($('#pot h5').text());
+      var bet = Number($('#player-bet').text());
+      var payload = {
+        table: $('#table').attr('data-table'),
+        stage: 'raise',
+        amount: Number(array[2]) - bet,
+        player: username
+      }
+      $('#pot h5').text(pot + payload.amount);
+      $('#player-bet').text(array[2]);
+      var stack = Number($('#player p:last').text());
+      $('#player p:last').text(stack - payload.amount);
       socket.emit('play', payload);
       break;
   }
@@ -762,6 +797,8 @@ $('#even').click(function() {
       amount: Number(array[1]),
       player: username
     }
+    var bet = Number($('#player-bet').text());
+    $('#player-bet').text(bet + payload.amount);
   }
   socket.emit('play', payload);
 });
@@ -776,6 +813,8 @@ $('#down').click(function() {
   var pot = $('#pot h5').text();
   $('#opponent p:last').text(Number(oppStack) + Number(pot));
   $('#pot h5').text('0');
+  $('#player-bet').text('0');
+  $('#opp-bet').text('0');
   $('#up').addClass('hide');
   $('#even').addClass('hide');
   $('#down').addClass('hide');

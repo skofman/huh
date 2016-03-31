@@ -270,7 +270,8 @@ io.on('connection', function(socket) {
       case 'setup':
         var update = {
           stage: 'setup',
-          action: 'update'
+          action: 'update',
+          amount: data.amount
         };
         table.pot += data.amount;
         if (table.first.player === data.player) {
@@ -362,7 +363,8 @@ io.on('connection', function(socket) {
             table.pot += data.amount;
             var update = {
               stage: 'pre',
-              pot: table.pot
+              pot: table.pot,
+              amount: data.amount
             }
             if (table.pot != Number(table.bb) * 2) {
               update.action = 'call';
@@ -381,6 +383,25 @@ io.on('connection', function(socket) {
               io.emit(table.first.player, update);
             }
             break;
+        }
+        break;
+      case 'raise':
+        table.pot += data.amount;
+        var update = {
+          stage: table.stage,
+          pot: table.pot,
+          amount: data.amount,
+          action: 'raise'
+        }
+        if (table.first.player == data.player) {
+          table.first.stack -= data.amount;
+          update.oppstack = table.first.stack;
+          io.emit(table.second.player, update);
+        }
+        else {
+          table.second.stack -= data.amount;
+          update.oppstack = table.second.stack;
+          io.emit(table.first.player, update);
         }
         break;
     }

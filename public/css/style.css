@@ -253,3 +253,25 @@
   width: 20px;
   height: 20px;
 }
+
+#player-bet {
+  position: absolute;
+  top: 265px;
+  left: 200px;
+  color: white;
+  padding: 5px 10px 5px 10px;
+  border: 2px solid black;
+  border-radius: 5px;
+  z-index: 3 !important;
+}
+
+#opp-bet {
+  position: absolute;
+  top: 265px;
+  left: 670px;
+  color: white;
+  padding: 5px 10px 5px 10px;
+  border: 2px solid black;
+  border-radius: 5px;
+  z-index: 3 !important;
+}
