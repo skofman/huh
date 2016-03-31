@@ -641,24 +641,55 @@ promise.then(function(value) {
       case 'pre':
         switch(data.action) {
           case 'deal':
-          if (data.dealer) {
-            $('#opp-card1').removeClass('hide');
-            $('#opp-card2').removeClass('hide');
-            $('#player-card1').removeClass('hide');
-            $('#player-card2').removeClass('hide');
-            $('#opp-card1').animate({
-              top: '-545px',
-              left: '198px'
-            }, 'slow', function() {
+            if (data.dealer) {
+              $('#opp-card1').removeClass('hide');
+              $('#opp-card2').removeClass('hide');
+              $('#player-card1').removeClass('hide');
+              $('#player-card2').removeClass('hide');
+              $('#opp-card1').animate({
+                top: '-545px',
+                left: '198px'
+              }, 'slow', function() {
+                $('#player-card1').animate({
+                  top: '-545px',
+                  left: '-60px'
+                }, 'slow', function() {
+                  var card = '/images/cards/' + data.hand[0] + '.svg';
+                  $('#player-card1').attr('src', card);
+                  $('#opp-card2').animate({
+                    left: '711px',
+                    top: '-859px'
+                  }, 'slow', function() {
+                    $('#player-card2').animate({
+                      top: '-545px',
+                      left: '-212px'
+                    }, 'slow', function() {
+                      var card = '/images/cards/' + data.hand[1] + '.svg';
+                      $('#player-card2').attr('src', card);
+                      var raise = Number($('#table').attr('data-bb')) * 2;
+                      $('#up').text('Raise to ' + raise).removeClass('hide');
+                      var sb = Number($('#table').attr('data-bb')) / 2;
+                      $('#even').text('Call ' + sb).removeClass('hide');
+                      $('#down').text('Fold').removeClass('hide');
+                    })
+                  })
+                })
+              })
+            }
+            else {
+              $('#opp-card1').removeClass('hide');
+              $('#opp-card2').removeClass('hide');
+              $('#player-card1').removeClass('hide');
+              $('#player-card2').removeClass('hide');
               $('#player-card1').animate({
                 top: '-545px',
                 left: '-60px'
               }, 'slow', function() {
                 var card = '/images/cards/' + data.hand[0] + '.svg';
                 $('#player-card1').attr('src', card);
-                $('#opp-card2').animate({
-                  left: '711px',
-                  top: '-859px'
+                $('#opp-card1').animate({
+                  top: '-545px',
+                  left: '198px'
                 }, 'slow', function() {
                   $('#player-card2').animate({
                     top: '-545px',
@@ -666,44 +697,23 @@ promise.then(function(value) {
                   }, 'slow', function() {
                     var card = '/images/cards/' + data.hand[1] + '.svg';
                     $('#player-card2').attr('src', card);
-                    $('#up').text('Raise 4').removeClass('hide');
-                    $('#even').text('Check').removeClass('hide');
-                    $('#down').text('Fold').removeClass('hide');
+                    $('#opp-card2').animate({
+                      left: '711px',
+                      top: '-859px'
+                    }, 'slow')
                   })
                 })
               })
-            })
-          }
-          else {
-            $('#opp-card1').removeClass('hide');
-            $('#opp-card2').removeClass('hide');
-            $('#player-card1').removeClass('hide');
-            $('#player-card2').removeClass('hide');
-            $('#player-card1').animate({
-              top: '-545px',
-              left: '-60px'
-            }, 'slow', function() {
-              var card = '/images/cards/' + data.hand[0] + '.svg';
-              $('#player-card1').attr('src', card);
-              $('#opp-card1').animate({
-                top: '-545px',
-                left: '198px'
-              }, 'slow', function() {
-                $('#player-card2').animate({
-                  top: '-545px',
-                  left: '-212px'
-                }, 'slow', function() {
-                  var card = '/images/cards/' + data.hand[1] + '.svg';
-                  $('#player-card2').attr('src', card);
-                  $('#opp-card2').animate({
-                    left: '711px',
-                    top: '-859px'
-                  }, 'slow')
-                })
-              })
-            })
-          }
-          break;
+            }
+            break;
+          case 'firstcall':
+            $('#pot h5').text(data.pot);
+            $('#opponent p:last').text(data.oppstack);
+            $('#down').removeClass('hide');
+            var bb = Number($('#table').attr('data-bb'));
+            $('#up').text('Bet ' + bb).removeClass('hide');
+            $('#even').text('Check').removeClass('hide');
+            break;
         }
         break;
     }
@@ -737,7 +747,23 @@ $('#up').click(function(event) {
 });
 
 $('#even').click(function() {
-
+  var array = event.target.textContent.split(' ');
+  $('#up').addClass('hide');
+  $('#down').addClass('hide');
+  $('#even').addClass('hide');
+  var stack = Number($('#player p:last').text()) - Number(array[1]);
+  var pot = Number($('#pot h5').text()) + Number(array[1]);
+  $('#player p:last').text(stack);
+  $('#pot h5').text(pot);
+  if (array[0] === 'Call') {
+    var payload = {
+      table: $('#table').attr('data-table'),
+      stage: 'call',
+      amount: Number(array[1]),
+      player: username
+    }
+  }
+  socket.emit('play', payload);
 });
 
 $('#down').click(function() {

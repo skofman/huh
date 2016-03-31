@@ -356,6 +356,33 @@ io.on('connection', function(socket) {
         io.emit(tables[data.table].first.player, first);
         io.emit(tables[data.table].second.player, second);
         break;
+      case 'call':
+        switch(table.stage) {
+          case 'pre':
+            table.pot += data.amount;
+            var update = {
+              stage: 'pre',
+              pot: table.pot
+            }
+            if (table.pot != Number(table.bb) * 2) {
+              update.action = 'call';
+            }
+            else {
+              update.action = 'firstcall';
+            }
+            if (table.first.player == data.player) {
+              table.first.stack -= data.amount;
+              update.oppstack = table.first.stack;
+              io.emit(table.second.player, update);
+            }
+            else {
+              table.second.stack -= data.amount;
+              update.oppstack = table.second.stack;
+              io.emit(table.first.player, update);
+            }
+            break;
+        }
+        break;
     }
   });
 })
