@@ -103,6 +103,21 @@ Table.prototype.deal = function() {
       break;
   }
 };
+
+Table.prototype.newHand = function(winner, loser) {
+  console.log(winner);
+  console.log(loser);
+  winner.stack += this.pot;
+  this.pot = 0;
+  winner.hand = [];
+  loser.hand = [];
+  winner.dealer = !winner.dealer;
+  loser.dealer = !loser.dealer;
+  this.stage = 'setup';
+  for (var i = 0; i < this.deck.length; i++) {
+    this.deck[i] = true;
+  }
+}
 //check logged in user route
 app.get('/check', function(req, res) {
   for (key in users) {
@@ -250,44 +265,96 @@ io.on('connection', function(socket) {
   //Main play socket
   socket.on('play', function(data) {
     console.log(data);
+    var table = tables[data.table];
     switch(data.stage) {
       case 'setup':
         var update = {
-          stage: 'setup'
+          stage: 'setup',
+          action: 'update'
         };
-        tables[data.table].pot += data.amount;
-        if (tables[data.table].first.player === data.player) {
-          tables[data.table].first.stack -= data.amount;
-          update.action = 'update';
-          update.amount = data.amount;
-          io.emit(tables[data.table].second.player, update);
+        table.pot += data.amount;
+        if (table.first.player === data.player) {
+          table.first.stack -= data.amount;
+          update.oppstack = table.first.stack;
+          update.pstack = table.second.stack;
+          update.pot = table.pot;
+          io.emit(table.second.player, update);
         }
         else {
-          tables[data.table].second.stack -= data.amount;
-          update.action = 'update';
-          update.amount = data.amount;
-          io.emit(tables[data.table].first.player, update);
+          table.second.stack -= data.amount;
+          update.oppstack = table.second.stack;
+          update.pstack = table.first.stack;
+          update.pot = table.pot;
+          io.emit(table.first.player, update);
         }
-        if (tables[data.table].pot === tables[data.table].bb * 3 / 2) {
-          tables[data.table].stage = 'pre';
-          tables[data.table].deal();
+        if (table.pot === table.bb * 3 / 2) {
+          table.stage = 'pre';
+          table.deal();
           var first = {
             table: data.tables,
             action: 'deal',
             stage: 'pre',
-            hand: tables[data.table].first.hand,
-            dealer: tables[data.table].first.dealer
+            hand: table.first.hand,
+            dealer: table.first.dealer
           }
           var second = {
             table: data.tables,
             action: 'deal',
             stage: 'pre',
-            hand: tables[data.table].second.hand,
-            dealer: tables[data.table].second.dealer
+            hand: table.second.hand,
+            dealer: table.second.dealer
           }
-          io.emit(tables[data.table].first.player, first);
-          io.emit(tables[data.table].second.player, second);
+          io.emit(table.first.player, first);
+          io.emit(table.second.player, second);
         }
+        break;
+      case 'fold':
+        var update = {
+          stage: 'setup',
+          action: 'update',
+          pot: 0,
+          hide: true
+        }
+        if (table.first.player === data.player) {
+          update.pstack = table.second.stack + table.pot;
+          update.oppstack = table.first.stack;
+          io.emit(table.second.player, update);
+          table.newHand(table.second, table.first);
+        }
+        else {
+          update.pstack = table.first.stack + table.pot;
+          update.oppstack = table.second.stack;
+          io.emit(table.first.player, update);
+          table.newHand(table.first, table.second);
+        }
+        var first = {
+          action: 'setup',
+          table: data.table,
+          stage: tables[data.table].stage,
+          status: tables[data.table].status,
+          dealer: tables[data.table].first.dealer,
+          bb: tables[data.table].bb,
+          stack: tables[data.table].first.stack,
+          opp: {
+            name: tables[data.table].second.player,
+            stack: tables[data.table].second.stack
+          }
+        }
+        var second = {
+          action: 'setup',
+          table: data.table,
+          stage: tables[data.table].stage,
+          status: tables[data.table].status,
+          dealer: tables[data.table].second.dealer,
+          bb: tables[data.table].bb,
+          stack: tables[data.table].second.stack,
+          opp: {
+            name: tables[data.table].first.player,
+            stack: tables[data.table].first.stack
+          }
+        }
+        io.emit(tables[data.table].first.player, first);
+        io.emit(tables[data.table].second.player, second);
         break;
     }
   });

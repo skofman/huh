@@ -615,10 +615,26 @@ promise.then(function(value) {
             $('#table').attr({'data-bb': data.bb, 'data-table': data.table});
             break;
           case 'update':
-            var oppstack = $('#opponent p:last').text();
-            var pot = $('#pot h5').text();
-            $('#opponent p:last').text(Number(oppstack) - data.amount);
-            $('#pot h5').text(Number(pot) + data.amount);
+            $('#player p:last').text(data.pstack);
+            $('#opponent p:last').text(data.oppstack);
+            $('#pot h5').text(data.pot);
+            if (data.hide) {
+              $('#player-card1').css({top: '-715px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
+              $('#player-card2').css({top: '-715px', left: '93px'}).attr('src','images/red.svg').addClass('hide');
+              $('#opp-card1').css({top: '-715px', left: '-129px'}).addClass('hide');
+              $('#opp-card2').css({top: '-1029px', left: '315px'}).addClass('hide');
+              var dealer = $('#dealer').css('left');
+              if (dealer === '180px') {
+                $('#dealer').animate({
+                  left: '700px'
+                }, 'slow');
+              }
+              else {
+                $('#dealer').animate({
+                  left: '180px'
+                }, 'slow');
+              }
+            }
             break;
         }
         break;
@@ -725,5 +741,32 @@ $('#even').click(function() {
 });
 
 $('#down').click(function() {
-
+  var payload = {
+    table: $('#table').attr('data-table'),
+    player: username,
+    stage: 'fold'
+  }
+  var oppStack = $('#opponent p:last').text();
+  var pot = $('#pot h5').text();
+  $('#opponent p:last').text(Number(oppStack) + Number(pot));
+  $('#pot h5').text('0');
+  $('#up').addClass('hide');
+  $('#even').addClass('hide');
+  $('#down').addClass('hide');
+  socket.emit('play', payload);
+  $('#player-card1').css({top: '-715px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
+  $('#player-card2').css({top: '-715px', left: '93px'}).attr('src','images/red.svg').addClass('hide');
+  $('#opp-card1').css({top: '-715px', left: '-129px'}).addClass('hide');
+  $('#opp-card2').css({top: '-1029px', left: '315px'}).addClass('hide');
+  var dealer = $('#dealer').css('left');
+  if (dealer === '180px') {
+    $('#dealer').animate({
+      left: '700px'
+    }, 'slow');
+  }
+  else {
+    $('#dealer').animate({
+      left: '180px'
+    }, 'slow');
+  }
 });
