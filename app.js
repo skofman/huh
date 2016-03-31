@@ -11,6 +11,10 @@ app.use(express.static(__dirname + '/public'));
 
 var users;
 var tables;
+var deck = ['2C','3C','4C','5C','6C','7C','8C','9C','TC','JC','QC','KC','AC',
+            '2S','3S','4S','5S','6S','7S','8S','9S','TS','JS','QS','KS','AS',
+            '2D','3D','4D','5D','6D','7D','8D','9D','TD','JD','QD','KD','AD',
+            '2H','3H','4H','5H','6H','7H','8H','9H','TH','JH','QH','KH','AH'];
 var tableNames = ['jungle','forest','sea','ocean','mountain'];
 //function to read users file
 (function() {
@@ -54,17 +58,51 @@ function Table(player, bb) {
     player: player,
     action: "",
     amount: "",
-    dealer: true
+    dealer: true,
+    hand: []
   },
   this.second = {
     action: "",
     amount: "",
-    dealer: false
+    dealer: false,
+    hand: []
   },
-  this.bb = bb,
-  this.stage = "",
-  this.turn = ""
-}
+  this.bb = bb;
+  this.stage = "";
+  this.pot = 0;
+  this.deck = [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true];
+};
+
+Table.prototype.deal = function() {
+  switch(this.stage) {
+    case 'pre':
+      var card = Math.floor(Math.random() * 52);
+      for (var i = 0; i < 2; i++) {
+        while (!this.deck[card]) {
+          card = Math.floor(Math.random() * 52);
+        }
+        if (this.first.dealer) {
+          this.second.hand.push(deck[card]);
+          this.deck[card] = false;
+          while(!this.deck[card]) {
+            card = Math.floor(Math.random() * 52);
+          }
+          this.first.hand.push(deck[card]);
+          this.deck[card] = false;
+        }
+        else {
+          this.first.hand.push(deck[card]);
+          this.deck[card] = false;
+          while(!this.deck[card]) {
+            card = Math.floor(Math.random() * 52);
+          }
+          this.second.hand.push(deck[card]);
+          this.deck[card] = false;
+        }
+      }
+      break;
+  }
+};
 //check logged in user route
 app.get('/check', function(req, res) {
   for (key in users) {
@@ -159,7 +197,7 @@ io.on('connection', function(socket) {
     }
     tables[name] = new Table(data.player, data.bb);
     tables[name].first.stack = data.buyin;
-    updateFile('tables');
+    //updateFile('tables');
     var update = {
       name: name,
       bb: data.bb,
@@ -171,7 +209,7 @@ io.on('connection', function(socket) {
   });
   socket.on('remove table', function(data) {
     delete tables[data.table];
-    updateFile('tables');
+    //updateFile('tables');
     socket.emit('my table', {status: 'remove'});
     io.emit('post tables', tables);
   });
@@ -179,8 +217,11 @@ io.on('connection', function(socket) {
     tables[data.table].second.player = data.player;
     tables[data.table].second.stack = data.buyin;
     tables[data.table].status = 'ready';
-    tables[data.table].stage = 'pre';
+    tables[data.table].stage = 'setup';
     var first = {
+      action: 'setup',
+      table: data.table,
+      stage: tables[data.table].stage,
       status: tables[data.table].status,
       dealer: tables[data.table].first.dealer,
       bb: tables[data.table].bb,
@@ -191,6 +232,9 @@ io.on('connection', function(socket) {
       }
     }
     var second = {
+      action: 'setup',
+      table: data.table,
+      stage: tables[data.table].stage,
       status: tables[data.table].status,
       dealer: tables[data.table].second.dealer,
       bb: tables[data.table].bb,
@@ -200,10 +244,52 @@ io.on('connection', function(socket) {
         stack: tables[data.table].first.stack
       }
     }
-    var firstCall = tables[data.table].first.player;
-    var secondCall = tables[data.table].second.player;
     io.emit(tables[data.table].first.player, first);
     io.emit(tables[data.table].second.player, second);
+  });
+  //Main play socket
+  socket.on('play', function(data) {
+    console.log(data);
+    switch(data.stage) {
+      case 'setup':
+        var update = {
+          stage: 'setup'
+        };
+        tables[data.table].pot += data.amount;
+        if (tables[data.table].first.player === data.player) {
+          tables[data.table].first.stack -= data.amount;
+          update.action = 'update';
+          update.amount = data.amount;
+          io.emit(tables[data.table].second.player, update);
+        }
+        else {
+          tables[data.table].second.stack -= data.amount;
+          update.action = 'update';
+          update.amount = data.amount;
+          io.emit(tables[data.table].first.player, update);
+        }
+        if (tables[data.table].pot === tables[data.table].bb * 3 / 2) {
+          tables[data.table].stage = 'pre';
+          tables[data.table].deal();
+          var first = {
+            table: data.tables,
+            action: 'deal',
+            stage: 'pre',
+            hand: tables[data.table].first.hand,
+            dealer: tables[data.table].first.dealer
+          }
+          var second = {
+            table: data.tables,
+            action: 'deal',
+            stage: 'pre',
+            hand: tables[data.table].second.hand,
+            dealer: tables[data.table].second.dealer
+          }
+          io.emit(tables[data.table].first.player, first);
+          io.emit(tables[data.table].second.player, second);
+        }
+        break;
+    }
   });
 })
 //Route of getting the active user

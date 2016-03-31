@@ -595,18 +595,135 @@ var promise = new Promise(function(resolve, reject) {
 promise.then(function(value) {
   username = value;
   socket.on(username, function(data) {
-    if (data.status === 'ready') {
-      $('#player p:first').text(username);
-      $('#player p:last').text(data.stack);
-      $('#opponent p:first').text(data.opp.name);
-      $('#opponent p:last').text(data.opp.stack);
-      if (!data.dealer) {
-        $('#dealer').css('left','700px');
-        $('#up').text('Post SB').removeClass('hide');
-      }
-      else {
-        $('#up').text('Post BB').removeClass('hide');
-      }
+    console.log(data);
+    switch(data.stage) {
+      case 'setup':
+        switch(data.action) {
+          case 'setup':
+            if (data.dealer) {
+              $('#up').text('Post SB').removeClass('hide');
+              $('#dealer').css('left', '180px');
+            }
+            else {
+              $('#up').text('Post BB').removeClass('hide');
+              $('#dealer').css('left', '700px');
+            }
+            $('#player p:first').text(username);
+            $('#player p:last').text(data.stack);
+            $('#opponent p:first').text(data.opp.name);
+            $('#opponent p:last').text(data.opp.stack);
+            $('#table').attr({'data-bb': data.bb, 'data-table': data.table});
+            break;
+          case 'update':
+            var oppstack = $('#opponent p:last').text();
+            var pot = $('#pot h5').text();
+            $('#opponent p:last').text(Number(oppstack) - data.amount);
+            $('#pot h5').text(Number(pot) + data.amount);
+            break;
+        }
+        break;
+      case 'pre':
+        switch(data.action) {
+          case 'deal':
+          if (data.dealer) {
+            $('#opp-card1').removeClass('hide');
+            $('#opp-card2').removeClass('hide');
+            $('#player-card1').removeClass('hide');
+            $('#player-card2').removeClass('hide');
+            $('#opp-card1').animate({
+              top: '-545px',
+              left: '198px'
+            }, 'slow', function() {
+              $('#player-card1').animate({
+                top: '-545px',
+                left: '-60px'
+              }, 'slow', function() {
+                var card = '/images/cards/' + data.hand[0] + '.svg';
+                $('#player-card1').attr('src', card);
+                $('#opp-card2').animate({
+                  left: '711px',
+                  top: '-859px'
+                }, 'slow', function() {
+                  $('#player-card2').animate({
+                    top: '-545px',
+                    left: '-212px'
+                  }, 'slow', function() {
+                    var card = '/images/cards/' + data.hand[1] + '.svg';
+                    $('#player-card2').attr('src', card);
+                    $('#up').text('Raise 4').removeClass('hide');
+                    $('#even').text('Check').removeClass('hide');
+                    $('#down').text('Fold').removeClass('hide');
+                  })
+                })
+              })
+            })
+          }
+          else {
+            $('#opp-card1').removeClass('hide');
+            $('#opp-card2').removeClass('hide');
+            $('#player-card1').removeClass('hide');
+            $('#player-card2').removeClass('hide');
+            $('#player-card1').animate({
+              top: '-545px',
+              left: '-60px'
+            }, 'slow', function() {
+              var card = '/images/cards/' + data.hand[0] + '.svg';
+              $('#player-card1').attr('src', card);
+              $('#opp-card1').animate({
+                top: '-545px',
+                left: '198px'
+              }, 'slow', function() {
+                $('#player-card2').animate({
+                  top: '-545px',
+                  left: '-212px'
+                }, 'slow', function() {
+                  var card = '/images/cards/' + data.hand[1] + '.svg';
+                  $('#player-card2').attr('src', card);
+                  $('#opp-card2').animate({
+                    left: '711px',
+                    top: '-859px'
+                  }, 'slow')
+                })
+              })
+            })
+          }
+          break;
+        }
+        break;
     }
   });
+});
+//Event listeners for the action buttons
+$('#up').click(function(event) {
+  var array = event.target.textContent.split(' ');
+  $('#up').addClass('hide');
+  switch(array[0]) {
+    case 'Post':
+      var bb = $('#table').attr('data-bb');
+      var payload = {
+        table: $('#table').attr('data-table'),
+        player: username,
+        stage: 'setup'
+      }
+      if (array[1] === 'BB') {
+        payload.amount = Number(bb);
+      }
+      else {
+        payload.amount = Number(bb) / 2;
+      }
+      var pot = $('#pot h5').text();
+      $('#pot h5').text(Number(pot) + payload.amount);
+      var stack = $('#player p:last').text();
+      $('#player p:last').text(Number(stack) - payload.amount);
+      socket.emit('play', payload);
+      break;
+  }
+});
+
+$('#even').click(function() {
+
+});
+
+$('#down').click(function() {
+
 });

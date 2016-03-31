@@ -102,8 +102,8 @@
 
 #player-card1 {
   position: relative;
-  top: -545px;
-  left: -60px;
+  top: -715px;
+  left: 315px;
   height: 310px;
   margin: 0;
   padding: 0;
@@ -112,8 +112,8 @@
 
 #player-card2 {
   position: relative;
-  top: -545px;
-  left: -212px;
+  top: -715px;
+  left: 93px;
   height: 310px;
   margin: 0;
   padding: 0;
@@ -122,8 +122,8 @@
 
 #opp-card1 {
   position: relative;
-  top: -545px;
-  left: 198px;
+  top: -715px;
+  left: -129px;
   height: 310px;
   margin: 0;
   padding: 0;
@@ -132,8 +132,8 @@
 
 #opp-card2 {
   position: relative;
-  top: -859px;
-  left: 711px;
+  top: -1029px;
+  left: 315px;
   height: 310px;
   margin: 0;
   padding: 0;
