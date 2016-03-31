@@ -71,12 +71,13 @@ function Table(player, bb) {
   this.stage = "";
   this.pot = 0;
   this.deck = [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true];
+  this.community = [];
 };
 
 Table.prototype.deal = function() {
+  var card = Math.floor(Math.random() * 52);
   switch(this.stage) {
     case 'pre':
-      var card = Math.floor(Math.random() * 52);
       for (var i = 0; i < 2; i++) {
         while (!this.deck[card]) {
           card = Math.floor(Math.random() * 52);
@@ -101,6 +102,17 @@ Table.prototype.deal = function() {
         }
       }
       break;
+    case 'flop':
+      for (var i = 0; i < 4; i++) {
+        while (!this.deck[card]) {
+          card = Math.floor(Math.random() * 52);
+        }
+        if (i != 0) {
+          this.community.push(deck[card]);
+        }
+        this.deck[card] = false;
+      }
+      break;
   }
 };
 
@@ -111,6 +123,7 @@ Table.prototype.newHand = function(winner, loser) {
   this.pot = 0;
   winner.hand = [];
   loser.hand = [];
+  this.community = [];
   winner.dealer = !winner.dealer;
   loser.dealer = !loser.dealer;
   this.stage = 'setup';
@@ -381,6 +394,31 @@ io.on('connection', function(socket) {
               table.second.stack -= data.amount;
               update.oppstack = table.second.stack;
               io.emit(table.first.player, update);
+            }
+            if (update.action === 'call') {
+              //determine all in state
+              var allin = false;
+              if (!allin) {
+                table.stage = 'flop';
+                table.deal();
+                var first = {
+                  stage: table.stage,
+                  action: 'deal flop',
+                  cards: table.community,
+                  dealer: table.first.dealer
+                }
+                var second = {
+                  stage: table.stage,
+                  action: 'deal flop',
+                  cards: table.community,
+                  dealer: table.second.dealer
+                }
+                io.emit(table.first.player, first);
+                io.emit(table.second.player, second);
+              }
+              else {
+                //Allin action
+              }
             }
             break;
         }

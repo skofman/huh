@@ -620,12 +620,18 @@ promise.then(function(value) {
             $('#opponent p:last').text(data.oppstack);
             $('#pot h5').text(data.pot);
             if (data.hide) {
+              $('#com-card1').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+              $('#com-card2').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+              $('#com-card3').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+              $('#com-card4').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+              $('#com-card5').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
               $('#player-bet').text('0');
               $('#opp-bet').text('0');
               $('#player-card1').css({top: '-715px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
               $('#player-card2').css({top: '-715px', left: '93px'}).attr('src','images/red.svg').addClass('hide');
               $('#opp-card1').css({top: '-715px', left: '-129px'}).addClass('hide');
               $('#opp-card2').css({top: '-1029px', left: '315px'}).addClass('hide');
+
               var dealer = $('#dealer').css('left');
               if (dealer === '180px') {
                 $('#dealer').animate({
@@ -731,6 +737,50 @@ promise.then(function(value) {
             var raise = Number($('#opp-bet').text()) + bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
             break;
+          case 'call':
+            $('#pot h5').text(data.pot);
+            $('#opponent p:last').text(data.oppstack);
+            var bet = Number($('#opp-bet').text());
+            $('#opp-bet').text(bet + data.amount);
+            break;
+        }
+        break;
+      case 'flop':
+        switch (data.action) {
+          case 'deal flop':
+            $('#opp-bet').text('0');
+            $('#player-bet').text('0');
+            if (!data.dealer) {
+              $('#down').removeClass('hide');
+              $('#even').text('Check').removeClass('hide');
+              var bb = $('#table').attr('data-bb');
+              $('#up').text('Bet ' + bb).removeClass('hide');
+            }
+            $('#com-card1').removeClass('hide');
+            $('#com-card2').removeClass('hide');
+            $('#com-card3').removeClass('hide');
+            $('#com-card1').animate({
+              top: '75px',
+              left: '185px'
+            }, 'slow', function() {
+              $('#com-card2').animate({
+                top: '75px',
+                left: '255px'
+              }, 'slow', function() {
+                $('#com-card3').animate({
+                  top: '75px',
+                  left: '325px'
+                }, 'slow', function() {
+                  var card1 = 'images/cards/' + data.cards[0] + '.svg';
+                  $('#com-card1').attr('src', card1);
+                  var card2 = 'images/cards/' + data.cards[1] + '.svg';
+                  $('#com-card2').attr('src', card2);
+                  var card3 = 'images/cards/' + data.cards[2] + '.svg';
+                  $('#com-card3').attr('src', card3);
+                })
+              })
+            });
+            break;
         }
         break;
     }
@@ -818,6 +868,11 @@ $('#down').click(function() {
   $('#up').addClass('hide');
   $('#even').addClass('hide');
   $('#down').addClass('hide');
+  $('#com-card1').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  $('#com-card2').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  $('#com-card3').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  $('#com-card4').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  $('#com-card5').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
   socket.emit('play', payload);
   $('#player-card1').css({top: '-715px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
   $('#player-card2').css({top: '-715px', left: '93px'}).attr('src','images/red.svg').addClass('hide');
