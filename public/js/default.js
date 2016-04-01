@@ -798,6 +798,18 @@ promise.then(function(value) {
             $('#even').text('Check').attr('data-action','close').removeClass('hide');
             $('#up').text('Bet ' + $('#table').attr('data-bb')).removeClass('hide');
             break;
+          case 'bet':
+            $('#pot h5').text(data.pot);
+            $('#opponent p:last').text(data.oppstack);
+            var bet = Number($('#opp-bet').text());
+            $('#opp-bet').text(bet + data.amount);
+            $('#down').removeClass('hide');
+            var call = Number($('#opp-bet').text()) - Number($('#player-bet').text());
+            $('#even').text('Call ' + call).removeClass('hide');
+            var bb = Number($('#table').attr('data-bb'));
+            var raise = Number($('#opp-bet').text()) + bb;
+            $('#up').text('Raise to ' + raise).removeClass('hide');
+            break;
         }
         break;
     }
