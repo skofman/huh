@@ -743,8 +743,17 @@ promise.then(function(value) {
             var bet = Number($('#opp-bet').text());
             $('#opp-bet').text(bet + data.amount);
             break;
-          case 'check':
-            
+          case 'bet':
+            $('#pot h5').text(data.pot);
+            $('#opponent p:last').text(data.oppstack);
+            var bet = Number($('#opp-bet').text());
+            $('#opp-bet').text(bet + data.amount);
+            $('#down').removeClass('hide');
+            var call = Number($('#opp-bet').text()) - Number($('#player-bet').text());
+            $('#even').text('Call ' + call).removeClass('hide');
+            var bb = Number($('#table').attr('data-bb'));
+            var raise = Number($('#opp-bet').text()) + bb;
+            $('#up').text('Raise to ' + raise).removeClass('hide');
             break;
         }
         break;
@@ -827,6 +836,23 @@ $('#up').click(function(event) {
       }
       $('#pot h5').text(pot + payload.amount);
       $('#player-bet').text(array[2]);
+      var stack = Number($('#player p:last').text());
+      $('#player p:last').text(stack - payload.amount);
+      socket.emit('play', payload);
+      break;
+    case 'Bet':
+      $('#down').addClass('hide');
+      $('#even').addClass('hide');
+      var pot = Number($('#pot h5').text());
+      var bet = Number($('#player-bet').text());
+      var payload = {
+        table: $('#table').attr('data-table'),
+        stage: 'bet',
+        amount: Number(array[1]),
+        player: username
+      }
+      $('#pot h5').text(pot + payload.amount);
+      $('#player-bet').text(bet + Number(array[1]));
       var stack = Number($('#player p:last').text());
       $('#player p:last').text(stack - payload.amount);
       socket.emit('play', payload);

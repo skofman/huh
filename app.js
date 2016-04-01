@@ -474,6 +474,25 @@ io.on('connection', function(socket) {
             break;
         }
         break;
+      case 'bet':
+        table.pot += data.amount;
+        var update = {
+          stage: table.stage,
+          pot: table.pot,
+          amount: data.amount,
+          action: 'bet'
+        }
+        if (table.first.player == data.player) {
+          table.first.stack -= data.amount;
+          update.oppstack = table.first.stack;
+          io.emit(table.second.player, update);
+        }
+        else {
+          table.second.stack -= data.amount;
+          update.oppstack = table.second.stack;
+          io.emit(table.first.player, update);
+        }
+        break;
     }
   });
 })
