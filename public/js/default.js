@@ -793,6 +793,11 @@ promise.then(function(value) {
               })
             });
             break;
+          case 'check':
+            $('#down').removeClass('hide');
+            $('#even').text('Check').attr('data-action','close').removeClass('hide');
+            $('#up').text('Bet ' + $('#table').attr('data-bb')).removeClass('hide');
+            break;
         }
         break;
     }

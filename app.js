@@ -472,6 +472,20 @@ io.on('connection', function(socket) {
             io.emit(table.first.player, first);
             io.emit(table.second.player, second);
             break;
+          case 'flop':
+            if (data.action === 'open') {
+              var update = {
+                stage: table.stage,
+                action: 'check'
+              }
+              if (table.first.player == data.player) {
+                io.emit(table.second.player, update);
+              }
+              else {
+                io.emit(table.first.player, update);
+              }
+            }
+            break;
         }
         break;
       case 'bet':
