@@ -114,6 +114,7 @@ Table.prototype.deal = function() {
       }
       break;
     case 'turn':
+    case 'river':
       while (!this.deck[card]) {
         card = Math.floor(Math.random() * 52);
       }
@@ -475,6 +476,85 @@ io.on('connection', function(socket) {
               //Allin action
             }
             break;
+          case 'turn':
+            table.pot += data.amount;
+            var update = {
+              stage: 'turn',
+              pot: table.pot,
+              amount: data.amount,
+              action: 'call'
+            }
+            if (table.first.player == data.player) {
+              table.first.stack -= data.amount;
+              update.oppstack = table.first.stack;
+              io.emit(table.second.player, update);
+            }
+            else {
+              table.second.stack -= data.amount;
+              update.oppstack = table.second.stack;
+              io.emit(table.first.player, update);
+            }
+            //determine all in state
+            var allin = false;
+            if (!allin) {
+              table.stage = 'river';
+              table.deal();
+              var first = {
+                stage: table.stage,
+                action: 'deal river',
+                cards: table.community,
+                dealer: table.first.dealer
+              }
+              var second = {
+                stage: table.stage,
+                action: 'deal river',
+                cards: table.community,
+                dealer: table.second.dealer
+              }
+              io.emit(table.first.player, first);
+              io.emit(table.second.player, second);
+            }
+            else {
+              //Allin action
+            }
+            break;
+          case 'river':
+            table.pot += data.amount;
+            var update = {
+              stage: 'turn',
+              pot: table.pot,
+              amount: data.amount,
+              action: 'call'
+            }
+            if (table.first.player == data.player) {
+              table.first.stack -= data.amount;
+              update.oppstack = table.first.stack;
+              io.emit(table.second.player, update);
+            }
+            else {
+              table.second.stack -= data.amount;
+              update.oppstack = table.second.stack;
+              io.emit(table.first.player, update);
+            }
+            //determine all in state
+            var allin = false;
+            if (!allin) {
+              table.stage = 'showdown';
+              var first = {
+                stage: table.stage,
+                opp: table.second.hand
+              }
+              var second = {
+                stage: table.stage,
+                opp: table.first.hand
+              }
+              io.emit(table.first.player, first);
+              io.emit(table.second.player, second);
+            }
+            else {
+              //Allin action
+            }
+            break;
         }
         break;
       case 'raise':
@@ -553,6 +633,65 @@ io.on('connection', function(socket) {
                 action: 'deal turn',
                 cards: table.community,
                 dealer: table.second.dealer
+              }
+              io.emit(table.first.player, first);
+              io.emit(table.second.player, second);
+            }
+            break;
+          case 'turn':
+            if (data.action === 'open') {
+              var update = {
+                stage: table.stage,
+                action: 'check'
+              }
+              if (table.first.player == data.player) {
+                io.emit(table.second.player, update);
+              }
+              else {
+                io.emit(table.first.player, update);
+              }
+            }
+            else {
+              table.stage = 'river';
+              table.deal();
+              var first = {
+                stage: table.stage,
+                action: 'deal river',
+                cards: table.community,
+                dealer: table.first.dealer
+              }
+              var second = {
+                stage: table.stage,
+                action: 'deal river',
+                cards: table.community,
+                dealer: table.second.dealer
+              }
+              io.emit(table.first.player, first);
+              io.emit(table.second.player, second);
+            }
+            break;
+          case 'river':
+            if (data.action === 'open') {
+              var update = {
+                stage: table.stage,
+                action: 'check'
+              }
+              if (table.first.player == data.player) {
+                io.emit(table.second.player, update);
+              }
+              else {
+                io.emit(table.first.player, update);
+              }
+            }
+            else {
+              table.stage = 'showdown';
+              var first = {
+                stage: table.stage,
+                opp: table.second.hand
+              }
+              var second = {
+                stage: table.stage,
+                opp: table.first.hand
               }
               io.emit(table.first.player, first);
               io.emit(table.second.player, second);
