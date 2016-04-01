@@ -5,6 +5,7 @@ var jsonParser = require('body-parser').json();
 var fs = require('fs');
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
+var _ = require('lodash');
 
 app.use(cookieParser());
 app.use(express.static(__dirname + '/public'));
@@ -59,13 +60,23 @@ function Table(player, bb) {
     action: "",
     amount: "",
     dealer: true,
-    hand: []
+    hand: [],
+    strength: {
+      value: 0,
+      type: [],
+      kicker: []
+    }
   },
   this.second = {
     action: "",
     amount: "",
     dealer: false,
-    hand: []
+    hand: [],
+    strength: {
+      value: 0,
+      type: [],
+      kicker: []
+    }
   },
   this.bb = bb;
   this.stage = "";
@@ -73,7 +84,7 @@ function Table(player, bb) {
   this.deck = [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true];
   this.community = [];
 };
-
+//Prototype method for dealing cards
 Table.prototype.deal = function() {
   var card = Math.floor(Math.random() * 52);
   switch(this.stage) {
@@ -128,7 +139,7 @@ Table.prototype.deal = function() {
       break;
   }
 };
-
+//Prototype method for starting a new hand
 Table.prototype.newHand = function(winner, loser) {
   console.log(winner);
   console.log(loser);
@@ -142,6 +153,196 @@ Table.prototype.newHand = function(winner, loser) {
   this.stage = 'setup';
   for (var i = 0; i < this.deck.length; i++) {
     this.deck[i] = true;
+  }
+}
+//Prototype method for determining the winner
+Table.prototype.showdown = function(player) {
+  var hand = player.hand.concat(this.community);
+  var values = [];
+  var suits = [];
+  var cards = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+  var suitArr = ['D','H','S','C'];
+
+  for (var i = 0; i < hand.length; i++) {
+    values.push(hand[i].charAt(0));
+    suits.push(hand[i].charAt(1));
+  }
+  //Checking for Royal Flush
+  var aces = _.filter(hand, function(value) {
+    return value.charAt(0) === 'A';
+  });
+  for (var i = 0; i < aces.length; i++) {
+    var suit = aces[i].charAt(1);
+    if (_.includes(hand, 'K' + suit) && _.includes(hand, 'Q' + suit) && _.includes(hand, 'J' + suit) && _.includes(hand, 'T' + suit)) {
+      player.strength.value = 9;
+      return;
+    }
+  }
+  //Checking for Straight flush
+  for (var i = 1; i < cards.length - 3; i++) {
+    var card = _.filter(hand, function(value) {
+      return value.charAt(0) === cards[i];
+    });
+    for (var j = 0; j < card.length; j++) {
+      if (cards[i] === '5') {
+        var lastcard = 'A';
+      }
+      else {
+        var lastcard = cards[i + 4];
+      }
+      var suit = card[j].charAt(1);
+      if (_.includes(hand, cards[i + 1] + suit) && _.includes(hand, cards[i + 2] + suit) && _.includes(hand, cards[i + 3] + suit) && _.includes(hand, lastcard + suit)) {
+        player.strength.value = 8;
+        player.strength.type.push(cards[i]);
+        return;
+      }
+    }
+  }
+  //Checking for 4 of a kind
+  for (var i = 0; i < values.length; i++) {
+    var quads = _.filter(values, function(value) {
+      return values[i] === value;
+    })
+    if (quads.length === 4) {
+      player.strength.value = 7;
+      player.strength.type.push(quads[0]);
+      var kicker = _.filter(values, function(value) {
+        return Number(value != quads[0]);
+      });
+      for (var j = 0; j < cards.length; j++) {
+        if (_.includes(kicker, cards[j])) {
+          player.strength.kicker.push(cards[j]);
+          return;
+        }
+      }
+    }
+  }
+  //Checking for Full House
+  for (var i = 0; i < cards.length; i++) {
+    var top = _.filter(values, function(value) {
+      return cards[i] === value;
+    })
+    if (top.length === 3) {
+      var newValues = _.filter(values, function(value) {
+        return value != cards[i];
+      })
+      for (var j = 0; j < cards.length; j++) {
+        var bottom = _.filter(newValues, function(value) {
+          return value === cards[j];
+        })
+        if (bottom.length >= 2) {
+          player.strength.value = 6;
+          player.strngth.type.push(top[0]);
+          player.strength.type.push(bottom[0]);
+          return;
+        }
+      }
+    }
+  }
+  //Checking for a Flush
+  for (var i = 0; i < suitArr.length; i++) {
+    var flush = _.filter(suits, function(value) {
+      return value === suitArr[i];
+    })
+    if (flush.length >= 5) {
+      player.strength.value = 5;
+      var order = _.filter(hand, function(value) {
+        return value.charAt(1) === flush[0];
+      })
+      for (var j = 0; j < cards.length; j++) {
+        if (_.includes(order, cards[j] + flush[0])) {
+          player.strength.type.push(cards[j]);
+          if (player.strength.type.length === 5) {
+            return;
+          }
+        }
+      }
+    }
+  }
+  //Checking for Straight
+  for (var i = 0; i < cards.length - 3; i++) {
+    if (cards[i] === '5') {
+      var lastcard = 'A';
+    } else {
+      var lastcard = cards[i + 4];
+    }
+    if (_.includes(values, cards[i]) && _.includes(values, cards[i + 1]) && _.includes(values, cards[i + 2]) && _.includes(values, cards[i + 3]) && _.includes(values, lastcard)) {
+      player.strength.value = 4;
+      player.strength.type.push(cards[i]);
+      return;
+    }
+  }
+  //Checking for 3 of a kind
+  for (var i = 0; i < cards.length; i++) {
+    var trips = _.filter(values, function(value) {
+      return value === cards[i];
+    })
+    if (trips.length === 3) {
+      player.strength.value = 3;
+      player.strength.type.push(trips[0]);
+      var kicker = _.filter(values, function(value) {
+        return value != trips[0];
+      })
+      console.log(kicker);
+      for (var j = 0; j < cards.length; j++) {
+        if (_.includes(kicker, cards[j])) {
+          player.strength.kicker.push(cards[j]);
+          if (player.strength.kicker.length === 2) {
+            return;
+          }
+        }
+      }
+    }
+  }
+  //Checking for 2 pairs or pair
+  for (var i = 0; i < cards.length; i++) {
+    var top = _.filter(values, function(value) {
+      return value === cards[i];
+    })
+    if (top.length === 2) {
+      for (var j = i + 1; j < cards.length; j++) {
+        var bottom = _.filter(values, function(value) {
+          return value === cards[j];
+        })
+        if (bottom.length === 2) {
+          player.strength.value = 2;
+          player.strength.type.push(top[0]);
+          player.strength.type.push(bottom[0]);
+          var kicker = _.filter(values, function(value) {
+            return value != top[0] && value != bottom[0];
+          })
+          for (var k = 0; k < cards.length; k++) {
+            if (_.includes(kicker, cards[k])) {
+              player.strength.kicker.push(cards[k]);
+              return;
+            }
+          }
+        }
+      }
+      player.strength.value = 1;
+      player.strength.type.push(top[0]);
+      var kicker = _.filter(values, function(value) {
+        return value != top[0];
+      })
+      for (var j = 0; j < cards.length; j++) {
+        if (_.includes(kicker, cards[j])) {
+          player.strength.kicker.push(cards[j]);
+          if (player.strength.kicker.length === 3) {
+            return;
+          }
+        }
+      }
+    }
+  }
+  //High card
+  player.strength.value = 0;
+  for (var i = 0; i < cards.length; i++) {
+    if (_.includes(values, cards[i])) {
+      player.strength.type.push(cards[i]);
+      if (player.strength.type.length === 5) {
+        return;
+      }
+    }
   }
 }
 //check logged in user route
