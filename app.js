@@ -154,6 +154,12 @@ Table.prototype.newHand = function(winner, loser) {
   for (var i = 0; i < this.deck.length; i++) {
     this.deck[i] = true;
   }
+  winner.strength.value = 0;
+  loser.strength.value = 0;
+  winner.strength.type = [];
+  loser.strength.type = [];
+  winner.strength.kicker = [];
+  loser.strength.kicker = [];
 }
 //Prototype method for determining the winner
 Table.prototype.showdown = function(player) {
@@ -232,7 +238,7 @@ Table.prototype.showdown = function(player) {
         })
         if (bottom.length >= 2) {
           player.strength.value = 6;
-          player.strngth.type.push(top[0]);
+          player.strength.type.push(top[0]);
           player.strength.type.push(bottom[0]);
           return;
         }
@@ -741,16 +747,303 @@ io.on('connection', function(socket) {
             var allin = false;
             if (!allin) {
               table.stage = 'showdown';
+              table.showdown(table.first);
+              table.showdown(table.second);
+              var winner = "";
+              var loser = "";
+              if (table.first.strength.value > table.second.strength.value) {
+                winner = table.first;
+                loser = table.second;
+              }
+              else if (table.first.strength.value < table.second.strength.value) {
+                winner = table.second;
+                loser = table.first;
+              }
+              else {
+                var values = {
+                  '2': 0,
+                  '3': 1,
+                  '4': 2,
+                  '5': 3,
+                  '6': 4,
+                  '7': 5,
+                  '8': 6,
+                  '9': 7,
+                  'T': 8,
+                  'J': 9,
+                  'Q': 10,
+                  'K': 11,
+                  'A': 12
+                }
+                switch(table.first.strength.value) {
+                  case 9:
+                    //Tie
+                    break;
+                  case 8:
+                    var type1 = values[table.first.strength.type[0]];
+                    var type2 = values[table.second.strength.type[0]];
+                    if (type1 > type2) {
+                      winner = table.first;
+                      loser = table.second;
+                    }
+                    else if (type2 > type1) {
+                      winner = table.second;
+                      loser = table.first;
+                    }
+                    else {
+                      //Tie
+                    }
+                    break;
+                  case 7:
+                    var type1 = values[table.first.strength.type[0]];
+                    var type2 = values[table.second.strength.type[0]];
+                    if (type1 > type2) {
+                      winner = table.first;
+                      loser = table.second;
+                    }
+                    else if (type2 > type1) {
+                      winner = table.second;
+                      loser = table.first;
+                    }
+                    else {
+                      var kick1 = values[table.first.strength.kicker[0]];
+                      var kick2 = values[table.second.strength.kicker[0]];
+                      if (kick1 > kick2) {
+                        winner = table.first;
+                        loser = table.second;
+                      }
+                      else if (kick2 > kick1){
+                        winner = table.second;
+                        loser = table.first;
+                      }
+                      else {
+                        //Tie
+                      }
+                    }
+                    break;
+                  case 6:
+                    for (var i = 0; i < 2; i++) {
+                      var type1 = values[table.first.strength.type[i]];
+                      var type2 = values[table.second.strength.type[i]];
+                      if (type1 > type2) {
+                        winner = table.first;
+                        loser = table.second;
+                        break;
+                      }
+                      else if (type2 > type1) {
+                        winner = table.second;
+                        loser = table.first;
+                        break;
+                      }
+                      if (i === 1) {
+                        //Tie
+                      }
+                    }
+                    break;
+                  case 5:
+                    for (var i = 0; i < 5; i++) {
+                      var type1 = values[table.first.strength.type[i]];
+                      var type2 = value[table.second.strength.type[i]];
+                      if (type1 > type2) {
+                        winner = table.first;
+                        loser = table.second;
+                        break;
+                      }
+                      else if (type2 > type1) {
+                        winner = table.second;
+                        loser = table.first;
+                        break;
+                      }
+                      if (i === 4) {
+                        //Tie
+                      }
+                    }
+                    break;
+                  case 4:
+                    var type1 = values[table.first.strength.type[0]];
+                    var type2 = values[table.second.strength.type[0]];
+                    if (type1 > type2) {
+                      winner = table.first;
+                      loser = table.second;
+                    }
+                    else if (type2 > type1) {
+                      winner = table.second;
+                      loser = table.first;
+                    }
+                    else {
+                      //Tie
+                    }
+                    break;
+                  case 3:
+                    var type1 = values[table.first.strength.type[0]];
+                    var type2 = values[table.second.strength.type[1]];
+                    if (type1 > type2) {
+                      winner = table.first;
+                      loser = table.second;
+                    }
+                    else if (type2 > type1) {
+                      winner = table.second;
+                      loser = table.first;
+                    }
+                    else {
+                      for (var i = 0; i < 2; i++) {
+                        var kick1 = values[table.first.strength.kicker[i]];
+                        var kick2 = values[table.second.strength.kicker[i]];
+                        if (kick1 > kick2) {
+                          winner = table.first;
+                          loser = table.second;
+                          break;
+                        }
+                        else if (kick2 > kick1) {
+                          winner = table.second;
+                          loser = table.first;
+                          break;
+                        }
+                        if (i === 1) {
+                          //Tie
+                        }
+                      }
+                    }
+                    break;
+                  case 2:
+                    for (var i = 0; i < 2; i++) {
+                      var type1 = values[table.first.strength.type[i]];
+                      var type2 = values[table.second.strength.type[i]];
+                      if (type1 > type2) {
+                        winner = table.first;
+                        loser = table.second;
+                        break;
+                      }
+                      else if (type2 > type1) {
+                        winner = table.first;
+                        loser = table.second;
+                        break;
+                      }
+                      if (i === 1) {
+                        var kick1 = values[table.first.strength.kicker[0]];
+                        var kick2 = values[table.second.strength.kicker[0]];
+                        if (kick1 > kick2) {
+                          winner = table.first;
+                          loser = table.second;
+                        }
+                        else if (kick2 > kick1) {
+                          winner = table.second;
+                          loser = table.first;
+                        }
+                        else {
+                          //Tie
+                        }
+                      }
+                    }
+                    break;
+                  case 1:
+                    var type1 = values[table.first.strength.type[0]];
+                    var type2 = values[table.second.strength.type[1]];
+                    if (type1 > type2) {
+                      winner = table.first;
+                      loser = table.second;
+                    }
+                    else if (type2 > type1) {
+                      winner = table.second;
+                      loser = table.first;
+                    }
+                    else {
+                      for (var i = 0; i < 3; i++) {
+                        var kick1 = values[table.first.strength.kicker[i]];
+                        var kick2 = values[table.second.strength.kicker[i]];
+                        if (kick1 > kick2) {
+                          winner = table.first;
+                          loser = table.second;
+                          break;
+                        }
+                        else if (kick2 > kick1) {
+                          winner = table.second;
+                          loser = table.first;
+                        }
+                        if (i === 2) {
+                          //Tie
+                        }
+                      }
+                    }
+                    break;
+                  case 0:
+                    for (var i = 0; i < 5; i++) {
+                      var type1 = values[table.first.strength.type[i]];
+                      var type2 = values[table.second.strength.type[i]];
+                      if (type1 > type2) {
+                        winner = table.first;
+                        loser = table.second;
+                        break;
+                      }
+                      else if (type2 > type1) {
+                        winner = table.second;
+                        loser = table.first;
+                        break;
+                      }
+                      if (i === 4) {
+                        //Tie
+                      }
+                    }
+                    break;
+                }
+              }
+              var updateFirst = {
+                stage: 'setup',
+                action: 'update',
+                pot: 0,
+                hide: true,
+                hand: table.first.strength
+              }
+              var updateSecond = {
+                stage: 'setup',
+                action: 'update',
+                pot: 0,
+                hide: true,
+                hand: table.second.strength
+              }
+              if (table.first.player === winner.player) {
+                updateFirst.pstack = table.first.stack + table.pot;
+                updateFirst.oppstack = table.second.stack;
+                updateSecond.pstack = table.second.stack;
+                updateSecond.oppstack = table.first.stack + table.pot;
+              }
+              else {
+                updateSecond.pstack = table.second.stack + table.pot;
+                updateSecond.oppstack = table.first.stack;
+                updateFirst.pstack = table.first.stack;
+                updateFirst.oppstack = table.second.stack + table.pot;
+              }
+              io.emit(table.second.player, updateSecond);
+              io.emit(table.first.player, updateFirst);
+              table.newHand(winner, loser);
               var first = {
-                stage: table.stage,
-                opp: table.second.hand
+                action: 'setup',
+                table: data.table,
+                stage: tables[data.table].stage,
+                status: tables[data.table].status,
+                dealer: tables[data.table].first.dealer,
+                bb: tables[data.table].bb,
+                stack: tables[data.table].first.stack,
+                opp: {
+                  name: tables[data.table].second.player,
+                  stack: tables[data.table].second.stack
+                }
               }
               var second = {
-                stage: table.stage,
-                opp: table.first.hand
+                action: 'setup',
+                table: data.table,
+                stage: tables[data.table].stage,
+                status: tables[data.table].status,
+                dealer: tables[data.table].second.dealer,
+                bb: tables[data.table].bb,
+                stack: tables[data.table].second.stack,
+                opp: {
+                  name: tables[data.table].first.player,
+                  stack: tables[data.table].first.stack
+                }
               }
-              io.emit(table.first.player, first);
-              io.emit(table.second.player, second);
+              io.emit(tables[data.table].first.player, first);
+              io.emit(tables[data.table].second.player, second);
             }
             else {
               //Allin action
@@ -886,16 +1179,303 @@ io.on('connection', function(socket) {
             }
             else {
               table.stage = 'showdown';
+              table.showdown(table.first);
+              table.showdown(table.second);
+              var winner = "";
+              var loser = "";
+              if (table.first.strength.value > table.second.strength.value) {
+                winner = table.first;
+                loser = table.second;
+              }
+              else if (table.first.strength.value < table.second.strength.value) {
+                winner = table.second;
+                loser = table.first;
+              }
+              else {
+                var values = {
+                  '2': 0,
+                  '3': 1,
+                  '4': 2,
+                  '5': 3,
+                  '6': 4,
+                  '7': 5,
+                  '8': 6,
+                  '9': 7,
+                  'T': 8,
+                  'J': 9,
+                  'Q': 10,
+                  'K': 11,
+                  'A': 12
+                }
+                switch(table.first.strength.value) {
+                  case 9:
+                    //Tie
+                    break;
+                  case 8:
+                    var type1 = values[table.first.strength.type[0]];
+                    var type2 = values[table.second.strength.type[0]];
+                    if (type1 > type2) {
+                      winner = table.first;
+                      loser = table.second;
+                    }
+                    else if (type2 > type1) {
+                      winner = table.second;
+                      loser = table.first;
+                    }
+                    else {
+                      //Tie
+                    }
+                    break;
+                  case 7:
+                    var type1 = values[table.first.strength.type[0]];
+                    var type2 = values[table.second.strength.type[0]];
+                    if (type1 > type2) {
+                      winner = table.first;
+                      loser = table.second;
+                    }
+                    else if (type2 > type1) {
+                      winner = table.second;
+                      loser = table.first;
+                    }
+                    else {
+                      var kick1 = values[table.first.strength.kicker[0]];
+                      var kick2 = values[table.second.strength.kicker[0]];
+                      if (kick1 > kick2) {
+                        winner = table.first;
+                        loser = table.second;
+                      }
+                      else if (kick2 > kick1){
+                        winner = table.second;
+                        loser = table.first;
+                      }
+                      else {
+                        //Tie
+                      }
+                    }
+                    break;
+                  case 6:
+                    for (var i = 0; i < 2; i++) {
+                      var type1 = values[table.first.strength.type[i]];
+                      var type2 = values[table.second.strength.type[i]];
+                      if (type1 > type2) {
+                        winner = table.first;
+                        loser = table.second;
+                        break;
+                      }
+                      else if (type2 > type1) {
+                        winner = table.second;
+                        loser = table.first;
+                        break;
+                      }
+                      if (i === 1) {
+                        //Tie
+                      }
+                    }
+                    break;
+                  case 5:
+                    for (var i = 0; i < 5; i++) {
+                      var type1 = values[table.first.strength.type[i]];
+                      var type2 = value[table.second.strength.type[i]];
+                      if (type1 > type2) {
+                        winner = table.first;
+                        loser = table.second;
+                        break;
+                      }
+                      else if (type2 > type1) {
+                        winner = table.second;
+                        loser = table.first;
+                        break;
+                      }
+                      if (i === 4) {
+                        //Tie
+                      }
+                    }
+                    break;
+                  case 4:
+                    var type1 = values[table.first.strength.type[0]];
+                    var type2 = values[table.second.strength.type[0]];
+                    if (type1 > type2) {
+                      winner = table.first;
+                      loser = table.second;
+                    }
+                    else if (type2 > type1) {
+                      winner = table.second;
+                      loser = table.first;
+                    }
+                    else {
+                      //Tie
+                    }
+                    break;
+                  case 3:
+                    var type1 = values[table.first.strength.type[0]];
+                    var type2 = values[table.second.strength.type[1]];
+                    if (type1 > type2) {
+                      winner = table.first;
+                      loser = table.second;
+                    }
+                    else if (type2 > type1) {
+                      winner = table.second;
+                      loser = table.first;
+                    }
+                    else {
+                      for (var i = 0; i < 2; i++) {
+                        var kick1 = values[table.first.strength.kicker[i]];
+                        var kick2 = values[table.second.strength.kicker[i]];
+                        if (kick1 > kick2) {
+                          winner = table.first;
+                          loser = table.second;
+                          break;
+                        }
+                        else if (kick2 > kick1) {
+                          winner = table.second;
+                          loser = table.first;
+                          break;
+                        }
+                        if (i === 1) {
+                          //Tie
+                        }
+                      }
+                    }
+                    break;
+                  case 2:
+                    for (var i = 0; i < 2; i++) {
+                      var type1 = values[table.first.strength.type[i]];
+                      var type2 = values[table.second.strength.type[i]];
+                      if (type1 > type2) {
+                        winner = table.first;
+                        loser = table.second;
+                        break;
+                      }
+                      else if (type2 > type1) {
+                        winner = table.first;
+                        loser = table.second;
+                        break;
+                      }
+                      if (i === 1) {
+                        var kick1 = values[table.first.strength.kicker[0]];
+                        var kick2 = values[table.second.strength.kicker[0]];
+                        if (kick1 > kick2) {
+                          winner = table.first;
+                          loser = table.second;
+                        }
+                        else if (kick2 > kick1) {
+                          winner = table.second;
+                          loser = table.first;
+                        }
+                        else {
+                          //Tie
+                        }
+                      }
+                    }
+                    break;
+                  case 1:
+                    var type1 = values[table.first.strength.type[0]];
+                    var type2 = values[table.second.strength.type[1]];
+                    if (type1 > type2) {
+                      winner = table.first;
+                      loser = table.second;
+                    }
+                    else if (type2 > type1) {
+                      winner = table.second;
+                      loser = table.first;
+                    }
+                    else {
+                      for (var i = 0; i < 3; i++) {
+                        var kick1 = values[table.first.strength.kicker[i]];
+                        var kick2 = values[table.second.strength.kicker[i]];
+                        if (kick1 > kick2) {
+                          winner = table.first;
+                          loser = table.second;
+                          break;
+                        }
+                        else if (kick2 > kick1) {
+                          winner = table.second;
+                          loser = table.first;
+                        }
+                        if (i === 2) {
+                          //Tie
+                        }
+                      }
+                    }
+                    break;
+                  case 0:
+                    for (var i = 0; i < 5; i++) {
+                      var type1 = values[table.first.strength.type[i]];
+                      var type2 = values[table.second.strength.type[i]];
+                      if (type1 > type2) {
+                        winner = table.first;
+                        loser = table.second;
+                        break;
+                      }
+                      else if (type2 > type1) {
+                        winner = table.second;
+                        loser = table.first;
+                        break;
+                      }
+                      if (i === 4) {
+                        //Tie
+                      }
+                    }
+                    break;
+                }
+              }
+              var updateFirst = {
+                stage: 'setup',
+                action: 'update',
+                pot: 0,
+                hide: true,
+                hand: table.first.strength
+              }
+              var updateSecond = {
+                stage: 'setup',
+                action: 'update',
+                pot: 0,
+                hide: true,
+                hand: table.second.strength
+              }
+              if (table.first.player === winner.player) {
+                updateFirst.pstack = table.first.stack + table.pot;
+                updateFirst.oppstack = table.second.stack;
+                updateSecond.pstack = table.second.stack;
+                updateSecond.oppstack = table.first.stack + table.pot;
+              }
+              else {
+                updateSecond.pstack = table.second.stack + table.pot;
+                updateSecond.oppstack = table.first.stack;
+                updateFirst.pstack = table.first.stack;
+                updateFirst.oppstack = table.second.stack + table.pot;
+              }
+              io.emit(table.second.player, updateSecond);
+              io.emit(table.first.player, updateFirst);
+              table.newHand(winner, loser);
               var first = {
-                stage: table.stage,
-                opp: table.second.hand
+                action: 'setup',
+                table: data.table,
+                stage: tables[data.table].stage,
+                status: tables[data.table].status,
+                dealer: tables[data.table].first.dealer,
+                bb: tables[data.table].bb,
+                stack: tables[data.table].first.stack,
+                opp: {
+                  name: tables[data.table].second.player,
+                  stack: tables[data.table].second.stack
+                }
               }
               var second = {
-                stage: table.stage,
-                opp: table.first.hand
+                action: 'setup',
+                table: data.table,
+                stage: tables[data.table].stage,
+                status: tables[data.table].status,
+                dealer: tables[data.table].second.dealer,
+                bb: tables[data.table].bb,
+                stack: tables[data.table].second.stack,
+                opp: {
+                  name: tables[data.table].first.player,
+                  stack: tables[data.table].first.stack
+                }
               }
-              io.emit(table.first.player, first);
-              io.emit(table.second.player, second);
+              io.emit(tables[data.table].first.player, first);
+              io.emit(tables[data.table].second.player, second);
             }
             break;
         }
