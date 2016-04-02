@@ -480,6 +480,8 @@ $('#create').click(function() {
     bb: $('#start-buyin').attr('data-bb'),
     buyin: $('#start-buyin').val()
   };
+  $('#dash-balance h5').text(balance - buyin);
+  $('#user-status p').text('Welcome, ' + username + '! Balance: ' + (balance - buyin));
   socket.emit('create table', data);
 });
 //Receiving created table from the server
@@ -487,7 +489,7 @@ socket.on('my table', function(data) {
   switch(data.status) {
     case 'create':
       $('#table-name').text(data.name);
-      var info = 'Blinds: ' + Number(data.bb) / 2 + ' / ' + data.bb + '.  Stack: ' + data.stack + '.';
+      var info = 'Blinds: ' + Number(data.bb) / 2 + ' / ' + data.bb + ' -  Stack: ' + data.stack;
       $('#table-info').text(info);
       $('#create-card').addClass('hide');
       $('#remove-card').removeClass('hide');
@@ -503,6 +505,10 @@ $('#remove').click(function() {
   var data = {
     table: $('#table-name').text()
   }
+  var stack = $('#table-info').text().split(' ');
+  var balance = Number($('#dash-balance h5').text()) + Number(stack[stack.length - 1]);
+  $('#dash-balance h5').text(balance);
+  $('#user-status').text('Welcome, ' + username + '! Balance: ' + balance);
   socket.emit('remove table', data);
 });
 //Populating existing tables
@@ -578,6 +584,9 @@ $('#game-grid').click(function(event) {
       player: $('#dash-user').text().trim(),
       buyin: $(valueSelector).val()
     }
+    var balance = Number($('#dash-balance h5').text().trim()) - payload.buyin;
+    $('#dash-balance h5').text(balance + ' ');
+    $('#user-status p').text('Welcome, ' + username + '! Balance: ' + balance);
     socket.emit('join table', payload)
   }
 });

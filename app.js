@@ -440,12 +440,13 @@ io.on('connection', function(socket) {
   socket.on('create table', function(data) {
     var name = tableNames[Math.floor(Math.random() * tableNames.length)];
     while(tables.hasOwnProperty(name)) {
-      console.log('in');
       name = tableNames[Math.floor(Math.random() * tableNames.length)];
     }
     tables[name] = new Table(data.player, data.bb);
     tables[name].first.stack = data.buyin;
-    //updateFile('tables');
+    updateFile('tables');
+    users[data.player].bankroll -= data.buyin;
+    updateFile('users');
     var update = {
       name: name,
       bb: data.bb,
@@ -456,8 +457,11 @@ io.on('connection', function(socket) {
     io.emit('post tables', tables);
   });
   socket.on('remove table', function(data) {
+    var user = tables[data.table].first.player;
+    users[user].bankroll += Number(tables[data.table].first.stack);
+    updateFile('users');
     delete tables[data.table];
-    //updateFile('tables');
+    updateFile('tables');
     socket.emit('my table', {status: 'remove'});
     io.emit('post tables', tables);
   });
