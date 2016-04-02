@@ -1095,3 +1095,25 @@ $('#down').click(function() {
     }, 'slow');
   }
 });
+
+$('#bet-plus').click(function() {
+  var array = $('#up').text().split(' ');
+  var bet = 0;
+  var max = 0;
+  if (array[0] === 'Bet') {
+    max = Number($('#player p:last').text());
+    bet = Number(array[1]) + 1;
+    if (bet > max) {
+      bet = max;
+    }
+    $('#up').text('Bet ' + bet);
+  }
+});
+
+$('#bet-minus').click(function() {
+
+});
+
+$('#bet-allin').click(function() {
+
+});

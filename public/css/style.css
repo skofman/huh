@@ -194,9 +194,9 @@
   position: absolute;
   top: 550px;
   left: 770px;
-  z-index: 3 !important;
   width: 100px;
   height: 50px;
+  z-index: 3 !important;
   vertical-align: middle;
 }
 
@@ -204,9 +204,9 @@
   position: absolute;
   top: 550px;
   left: 550px;
-  z-index: 3 !important;
   width: 100px;
   height: 50px;
+  z-index: 3 !important;
   vertical-align: middle;
 }
 
@@ -214,9 +214,9 @@
   position: absolute;
   top: 550px;
   left: 660px;
-  z-index: 3 !important;
   width: 100px;
   height: 50px;
+  z-index: 3 !important;
   vertical-align: middle;
 }
 
@@ -273,5 +273,12 @@
   padding: 5px 10px 5px 10px;
   border: 2px solid black;
   border-radius: 5px;
+  z-index: 3 !important;
+}
+
+#bet-selector {
+  position: absolute;
+  top: 520px;
+  left: 750px;
   z-index: 3 !important;
 }
