@@ -686,6 +686,7 @@ promise.then(function(value) {
                       $('#player-card2').attr('src', card);
                       var raise = Number($('#table').attr('data-bb')) * 2;
                       $('#up').text('Raise to ' + raise).removeClass('hide');
+                      $('#bet-selector').removeClass('hide');
                       var sb = Number($('#table').attr('data-bb')) / 2;
                       $('#even').text('Call ' + sb).removeClass('hide');
                       $('#down').text('Fold').removeClass('hide');
@@ -732,6 +733,7 @@ promise.then(function(value) {
             $('#down').removeClass('hide');
             var bb = Number($('#table').attr('data-bb'));
             $('#up').text('Bet ' + bb).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             $('#even').text('Check').attr('data-action','close').removeClass('hide');
             break;
           case 'raise':
@@ -745,6 +747,7 @@ promise.then(function(value) {
             var bb = Number($('#table').attr('data-bb'));
             var raise = Number($('#opp-bet').text()) + bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
           case 'call':
             $('#pot h5').text(data.pot);
@@ -763,6 +766,7 @@ promise.then(function(value) {
             var bb = Number($('#table').attr('data-bb'));
             var raise = Number($('#opp-bet').text()) + bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
         }
         break;
@@ -776,6 +780,7 @@ promise.then(function(value) {
               $('#even').text('Check').attr('data-action','open').removeClass('hide');
               var bb = $('#table').attr('data-bb');
               $('#up').text('Bet ' + bb).removeClass('hide');
+              $('#bet-selector').removeClass('hide');
             }
             $('#com-card1').removeClass('hide');
             $('#com-card2').removeClass('hide');
@@ -806,6 +811,7 @@ promise.then(function(value) {
             $('#down').removeClass('hide');
             $('#even').text('Check').attr('data-action','close').removeClass('hide');
             $('#up').text('Bet ' + $('#table').attr('data-bb')).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
           case 'bet':
             $('#pot h5').text(data.pot);
@@ -818,6 +824,7 @@ promise.then(function(value) {
             var bb = Number($('#table').attr('data-bb'));
             var raise = Number($('#opp-bet').text()) + bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
           case 'raise':
             $('#pot h5').text(data.pot);
@@ -830,6 +837,7 @@ promise.then(function(value) {
             var bb = Number($('#table').attr('data-bb'));
             var raise = Number($('#opp-bet').text()) + bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
           case 'call':
             $('#pot h5').text(data.pot);
@@ -849,6 +857,7 @@ promise.then(function(value) {
               $('#even').text('Check').attr('data-action','open').removeClass('hide');
               var bb = $('#table').attr('data-bb');
               $('#up').text('Bet ' + bb).removeClass('hide');
+              $('#bet-selector').removeClass('hide');
             }
             $('#com-card4').removeClass('hide');
             $('#com-card4').animate({
@@ -863,6 +872,7 @@ promise.then(function(value) {
             $('#down').removeClass('hide');
             $('#even').text('Check').attr('data-action','close').removeClass('hide');
             $('#up').text('Bet ' + $('#table').attr('data-bb')).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
           case 'bet':
             $('#pot h5').text(data.pot);
@@ -875,6 +885,7 @@ promise.then(function(value) {
             var bb = Number($('#table').attr('data-bb'));
             var raise = Number($('#opp-bet').text()) + bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
           case 'raise':
             $('#pot h5').text(data.pot);
@@ -887,6 +898,7 @@ promise.then(function(value) {
             var bb = Number($('#table').attr('data-bb'));
             var raise = Number($('#opp-bet').text()) + bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
           case 'call':
             $('#pot h5').text(data.pot);
@@ -906,6 +918,7 @@ promise.then(function(value) {
               $('#even').text('Check').attr('data-action','open').removeClass('hide');
               var bb = $('#table').attr('data-bb');
               $('#up').text('Bet ' + bb).removeClass('hide');
+              $('#bet-selector').removeClass('hide');
             }
             $('#com-card5').removeClass('hide');
             $('#com-card5').animate({
@@ -920,6 +933,7 @@ promise.then(function(value) {
             $('#down').removeClass('hide');
             $('#even').text('Check').attr('data-action','close').removeClass('hide');
             $('#up').text('Bet ' + $('#table').attr('data-bb')).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
           case 'bet':
             $('#pot h5').text(data.pot);
@@ -932,6 +946,7 @@ promise.then(function(value) {
             var bb = Number($('#table').attr('data-bb'));
             var raise = Number($('#opp-bet').text()) + bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
           case 'raise':
             $('#pot h5').text(data.pot);
@@ -944,6 +959,7 @@ promise.then(function(value) {
             var bb = Number($('#table').attr('data-bb'));
             var raise = Number($('#opp-bet').text()) + bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             break;
           case 'call':
             $('#pot h5').text(data.pot);
@@ -966,6 +982,7 @@ promise.then(function(value) {
 $('#up').click(function(event) {
   var array = event.target.textContent.split(' ');
   $('#up').addClass('hide');
+  $('#bet-selector').addClass('hide');
   switch(array[0]) {
     case 'Post':
       var bb = $('#table').attr('data-bb');
@@ -1027,6 +1044,7 @@ $('#up').click(function(event) {
 $('#even').click(function() {
   var array = event.target.textContent.split(' ');
   $('#up').addClass('hide');
+  $('#bet-selector').addClass('hide');
   $('#down').addClass('hide');
   $('#even').addClass('hide');
   if (array[0] === 'Call') {
@@ -1071,6 +1089,7 @@ $('#down').click(function() {
   $('#player-bet').text('0');
   $('#opp-bet').text('0');
   $('#up').addClass('hide');
+  $('#bet-selector').addClass('hide');
   $('#even').addClass('hide');
   $('#down').addClass('hide');
   $('#com-card1').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
@@ -1108,12 +1127,48 @@ $('#bet-plus').click(function() {
     }
     $('#up').text('Bet ' + bet);
   }
+  else {
+    max = Number($('#player p:last').text()) + Number($('#player-bet').text());
+    bet = Number(array[2]) + 1;
+    if (bet > max) {
+      bet = max;
+    }
+    $('#up').text('Raise to ' + bet);
+  }
+
 });
 
 $('#bet-minus').click(function() {
-
+  var array = $('#up').text().split(' ');
+  var bet = 0;
+  var min = 0;
+  if (array[0] === 'Bet') {
+    min = Number($('#table').attr('data-bb'));
+    bet = array[1] - 1;
+    if (bet < min) {
+      bet = min;
+    }
+    $('#up').text('Bet ' + bet);
+  }
+  else {
+    min = Number($('#opp-bet').text()) + Number($('#table').attr('data-bb'));
+    bet = array[2] - 1;
+    if (bet < min) {
+      bet = min;
+    }
+    $('#up').text('Raise to ' + bet);
+  }
 });
 
 $('#bet-allin').click(function() {
-
+  var array = $('#up').text().split(' ');
+  var bet = 0;
+  if (array[0] === 'Bet') {
+    bet = Number($('#player p:last').text());
+    $('#up').text('Bet ' + bet);
+  }
+  else {
+    bet = Number($('#player p:last').text()) + Number($('#player-bet').text());
+    $('#up').text('Raise to ' + bet);
+  }
 });
