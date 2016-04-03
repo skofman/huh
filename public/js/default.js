@@ -16,7 +16,7 @@ $('#login').submit(function(event) {
   var payload = JSON.stringify({
     username: $('#login-user').val(),
     pwd: $('#login-pwd').val()
-  })
+  });
 
   var xhr = new XMLHttpRequest();
 
@@ -622,6 +622,7 @@ promise.then(function(value) {
             $('#opponent p:first').text(data.opp.name);
             $('#opponent p:last').text(data.opp.stack);
             $('#table').attr({'data-bb': data.bb, 'data-table': data.table});
+            $('#table-session').text('Table: ' + data.table + ' - Blinds: ' + (Number(data.bb) / 2) + '/' + data.bb + " - No Limit Hold'em");
             break;
           case 'update':
             $('#opp-bet').text(data.amount);
