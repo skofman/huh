@@ -79,10 +79,11 @@ function Table(player, bb) {
     }
   },
   this.bb = bb;
-  this.stage = "";
+  this.action = "";
   this.pot = 0;
   this.deck = [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true];
   this.community = [];
+  this.hand = 1;
 };
 //Prototype method for dealing cards
 Table.prototype.deal = function() {
@@ -140,29 +141,23 @@ Table.prototype.deal = function() {
   }
 };
 //Prototype method for starting a new hand
-Table.prototype.newHand = function(winner, loser) {
-  console.log(winner);
-  console.log(loser);
-  winner.stack += this.pot;
-  this.pot = 0;
-  winner.hand = [];
-  loser.hand = [];
-  this.community = [];
-  winner.dealer = !winner.dealer;
-  loser.dealer = !loser.dealer;
-  this.stage = 'setup';
+Table.prototype.newHand = function() {
+  this.stage = "";
   for (var i = 0; i < this.deck.length; i++) {
     this.deck[i] = true;
   }
-  winner.strength.value = 0;
-  loser.strength.value = 0;
-  winner.strength.type = [];
-  loser.strength.type = [];
-  winner.strength.kicker = [];
-  loser.strength.kicker = [];
+  this.first.hand = [];
+  this.second.hand = [];
+  this.first.strength.value = 0;
+  this.second.strength.value = 0;
+  this.first.strength.type = [];
+  this.second.strength.type = [];
+  this.first.strength.kicker = [];
+  this.second.strength.kicker = [];
+  this.community = [];
 }
 //Prototype method for determining the winner
-Table.prototype.showdown = function(player) {
+Table.prototype.evaluateHand = function(player) {
   var hand = player.hand.concat(this.community);
   var values = [];
   var suits = [];
@@ -466,1045 +461,506 @@ io.on('connection', function(socket) {
     io.emit('post tables', tables);
   });
   socket.on('join table', function(data) {
-    tables[data.table].second.player = data.player;
-    tables[data.table].second.stack = data.buyin;
-    tables[data.table].status = 'ready';
-    tables[data.table].stage = 'setup';
+    var table = tables[data.table];
+    table.second.player = data.player;
+    table.second.stack = data.buyin;
+    table.status = 'ready';
+    table.action = 'setup';
     var first = {
       action: 'setup',
       table: data.table,
-      stage: tables[data.table].stage,
-      status: tables[data.table].status,
-      dealer: tables[data.table].first.dealer,
-      bb: tables[data.table].bb,
-      stack: tables[data.table].first.stack,
+      status: table.status,
+      dealer: table.first.dealer,
+      bb: table.bb,
+      stack: table.first.stack,
       opp: {
-        name: tables[data.table].second.player,
-        stack: tables[data.table].second.stack
-      }
+        name: table.second.player,
+        stack: table.second.stack
+      },
+      hand: table.hand
     }
     var second = {
       action: 'setup',
       table: data.table,
-      stage: tables[data.table].stage,
-      status: tables[data.table].status,
-      dealer: tables[data.table].second.dealer,
-      bb: tables[data.table].bb,
-      stack: tables[data.table].second.stack,
+      status: table.status,
+      dealer: table.second.dealer,
+      bb: table.bb,
+      stack: table.second.stack,
       opp: {
-        name: tables[data.table].first.player,
-        stack: tables[data.table].first.stack
-      }
+        name: table.first.player,
+        stack: table.first.stack
+      },
+      hand: table.hand
     }
-    io.emit(tables[data.table].first.player, first);
-    io.emit(tables[data.table].second.player, second);
+    io.emit(table.first.player, first);
+    io.emit(table.second.player, second);
   });
   //Main play socket
   socket.on('play', function(data) {
     console.log(data);
     var table = tables[data.table];
-    switch(data.stage) {
-      case 'setup':
+    switch(data.action) {
+      case 'post blind':
+        var bb = Number(table.bb);
+        table.pot = data.pot;
         var update = {
-          stage: 'setup',
-          action: 'update',
-          amount: data.amount
-        };
-        table.pot += data.amount;
-        if (table.first.player === data.player) {
-          table.first.stack -= data.amount;
-          update.oppstack = table.first.stack;
-          update.pstack = table.second.stack;
-          update.pot = table.pot;
+          action: 'update opp',
+          pot: data.pot,
+          stack: data.stack,
+          bet: data.amount
+        }
+        if (data.player == table.first.player) {
+          table.first.stack = data.stack;
           io.emit(table.second.player, update);
         }
         else {
-          table.second.stack -= data.amount;
-          update.oppstack = table.second.stack;
-          update.pstack = table.first.stack;
-          update.pot = table.pot;
+          table.second.stack = data.stack;
           io.emit(table.first.player, update);
         }
-        if (table.pot === table.bb * 3 / 2) {
+        if (data.pot === bb * (3 / 2)) {
           table.stage = 'pre';
           table.deal();
           var first = {
-            table: data.tables,
             action: 'deal',
-            stage: 'pre',
+            dealer: table.first.dealer,
             hand: table.first.hand,
-            dealer: table.first.dealer
+            bb: Number(table.bb)
           }
           var second = {
-            table: data.tables,
             action: 'deal',
-            stage: 'pre',
+            dealer: table.second.dealer,
             hand: table.second.hand,
-            dealer: table.second.dealer
+            bb: Number(table.bb)
           }
           io.emit(table.first.player, first);
           io.emit(table.second.player, second);
         }
         break;
       case 'fold':
-        var update = {
-          stage: 'setup',
-          action: 'update',
-          pot: 0,
-          hide: true
-        }
-        if (table.first.player === data.player) {
-          update.pstack = table.second.stack + table.pot;
-          update.oppstack = table.first.stack;
+        if (table.first.player == data.player) {
+          table.second.stack += table.pot;
+          table.pot = 0;
+          var update = {
+            action: 'opp fold',
+            stack: table.second.stack,
+            pot: table.pot
+          }
           io.emit(table.second.player, update);
-          table.newHand(table.second, table.first);
         }
         else {
-          update.pstack = table.first.stack + table.pot;
-          update.oppstack = table.second.stack;
-          io.emit(table.first.player, update);
-          table.newHand(table.first, table.second);
-        }
-        var first = {
-          action: 'setup',
-          table: data.table,
-          stage: tables[data.table].stage,
-          status: tables[data.table].status,
-          dealer: tables[data.table].first.dealer,
-          bb: tables[data.table].bb,
-          stack: tables[data.table].first.stack,
-          opp: {
-            name: tables[data.table].second.player,
-            stack: tables[data.table].second.stack
+          table.first.stack += table.pot;
+          table.pot = 0;
+          var update = {
+            action: 'opp fold',
+            stack: table.first.stack,
+            pot: table.pot
           }
+          io.emit(table.first.player, update);
+        }
+        table.pot = 0;
+        table.first.dealer = !table.first.dealer;
+        table.second.dealer = !table.second.dealer;
+        table.hand++;
+        var first = {
+          action: 'new hand',
+          hand: ['red','red'],
+          stack: table.first.stack,
+          oppstack: table.second.stack,
+          dealer: table.first.dealer,
+          number: table.hand,
+          bb: Number(table.bb)
         }
         var second = {
-          action: 'setup',
-          table: data.table,
-          stage: tables[data.table].stage,
-          status: tables[data.table].status,
-          dealer: tables[data.table].second.dealer,
-          bb: tables[data.table].bb,
-          stack: tables[data.table].second.stack,
-          opp: {
-            name: tables[data.table].first.player,
-            stack: tables[data.table].first.stack
-          }
+          action: 'new hand',
+          hand: ['red','red'],
+          stack: table.second.stack,
+          oppstack: table.first.stack,
+          dealer: table.second.dealer,
+          number: table.hand,
+          bb: Number(table.bb)
         }
-        io.emit(tables[data.table].first.player, first);
-        io.emit(tables[data.table].second.player, second);
+        io.emit(table.first.player, first);
+        io.emit(table.second.player, second);
+        table.newHand();
         break;
-      case 'call':
-        switch(table.stage) {
-          case 'pre':
-            table.pot += data.amount;
-            var update = {
-              stage: 'pre',
-              pot: table.pot,
-              amount: data.amount
-            }
-            if (table.pot != Number(table.bb) * 2) {
-              update.action = 'call';
-            }
-            else {
-              update.action = 'firstcall';
-            }
-            if (table.first.player == data.player) {
-              table.first.stack -= data.amount;
-              update.oppstack = table.first.stack;
-              io.emit(table.second.player, update);
-            }
-            else {
-              table.second.stack -= data.amount;
-              update.oppstack = table.second.stack;
-              io.emit(table.first.player, update);
-            }
-            if (update.action === 'call') {
-              //determine all in state
-              var allin = false;
-              if (!allin) {
-                table.stage = 'flop';
-                table.deal();
-                var first = {
-                  stage: table.stage,
-                  action: 'deal flop',
-                  cards: table.community,
-                  dealer: table.first.dealer
-                }
-                var second = {
-                  stage: table.stage,
-                  action: 'deal flop',
-                  cards: table.community,
-                  dealer: table.second.dealer
-                }
-                io.emit(table.first.player, first);
-                io.emit(table.second.player, second);
-              }
-              else {
-                //Allin action
-              }
-            }
-            break;
-          case 'flop':
-            table.pot += data.amount;
-            var update = {
-              stage: 'flop',
-              pot: table.pot,
-              amount: data.amount,
-              action: 'call'
-            }
-            if (table.first.player == data.player) {
-              table.first.stack -= data.amount;
-              update.oppstack = table.first.stack;
-              io.emit(table.second.player, update);
-            }
-            else {
-              table.second.stack -= data.amount;
-              update.oppstack = table.second.stack;
-              io.emit(table.first.player, update);
-            }
-            //determine all in state
-            var allin = false;
-            if (!allin) {
-              table.stage = 'turn';
-              table.deal();
-              var first = {
-                stage: table.stage,
-                action: 'deal turn',
-                cards: table.community,
-                dealer: table.first.dealer
-              }
-              var second = {
-                stage: table.stage,
-                action: 'deal turn',
-                cards: table.community,
-                dealer: table.second.dealer
-              }
-              io.emit(table.first.player, first);
-              io.emit(table.second.player, second);
-            }
-            else {
-              //Allin action
-            }
-            break;
-          case 'turn':
-            table.pot += data.amount;
-            var update = {
-              stage: 'turn',
-              pot: table.pot,
-              amount: data.amount,
-              action: 'call'
-            }
-            if (table.first.player == data.player) {
-              table.first.stack -= data.amount;
-              update.oppstack = table.first.stack;
-              io.emit(table.second.player, update);
-            }
-            else {
-              table.second.stack -= data.amount;
-              update.oppstack = table.second.stack;
-              io.emit(table.first.player, update);
-            }
-            //determine all in state
-            var allin = false;
-            if (!allin) {
-              table.stage = 'river';
-              table.deal();
-              var first = {
-                stage: table.stage,
-                action: 'deal river',
-                cards: table.community,
-                dealer: table.first.dealer
-              }
-              var second = {
-                stage: table.stage,
-                action: 'deal river',
-                cards: table.community,
-                dealer: table.second.dealer
-              }
-              io.emit(table.first.player, first);
-              io.emit(table.second.player, second);
-            }
-            else {
-              //Allin action
-            }
-            break;
-          case 'river':
-            table.pot += data.amount;
-            var update = {
-              stage: 'turn',
-              pot: table.pot,
-              amount: data.amount,
-              action: 'call'
-            }
-            if (table.first.player == data.player) {
-              table.first.stack -= data.amount;
-              update.oppstack = table.first.stack;
-              io.emit(table.second.player, update);
-            }
-            else {
-              table.second.stack -= data.amount;
-              update.oppstack = table.second.stack;
-              io.emit(table.first.player, update);
-            }
-            //determine all in state
-            var allin = false;
-            if (!allin) {
-              table.stage = 'showdown';
-              table.showdown(table.first);
-              table.showdown(table.second);
-              var winner = "";
-              var loser = "";
-              if (table.first.strength.value > table.second.strength.value) {
-                winner = table.first;
-                loser = table.second;
-              }
-              else if (table.first.strength.value < table.second.strength.value) {
-                winner = table.second;
-                loser = table.first;
-              }
-              else {
-                var values = {
-                  '2': 0,
-                  '3': 1,
-                  '4': 2,
-                  '5': 3,
-                  '6': 4,
-                  '7': 5,
-                  '8': 6,
-                  '9': 7,
-                  'T': 8,
-                  'J': 9,
-                  'Q': 10,
-                  'K': 11,
-                  'A': 12
-                }
-                switch(table.first.strength.value) {
-                  case 9:
-                    //Tie
-                    break;
-                  case 8:
-                    var type1 = values[table.first.strength.type[0]];
-                    var type2 = values[table.second.strength.type[0]];
-                    if (type1 > type2) {
-                      winner = table.first;
-                      loser = table.second;
-                    }
-                    else if (type2 > type1) {
-                      winner = table.second;
-                      loser = table.first;
-                    }
-                    else {
-                      //Tie
-                    }
-                    break;
-                  case 7:
-                    var type1 = values[table.first.strength.type[0]];
-                    var type2 = values[table.second.strength.type[0]];
-                    if (type1 > type2) {
-                      winner = table.first;
-                      loser = table.second;
-                    }
-                    else if (type2 > type1) {
-                      winner = table.second;
-                      loser = table.first;
-                    }
-                    else {
-                      var kick1 = values[table.first.strength.kicker[0]];
-                      var kick2 = values[table.second.strength.kicker[0]];
-                      if (kick1 > kick2) {
-                        winner = table.first;
-                        loser = table.second;
-                      }
-                      else if (kick2 > kick1){
-                        winner = table.second;
-                        loser = table.first;
-                      }
-                      else {
-                        //Tie
-                      }
-                    }
-                    break;
-                  case 6:
-                    for (var i = 0; i < 2; i++) {
-                      var type1 = values[table.first.strength.type[i]];
-                      var type2 = values[table.second.strength.type[i]];
-                      if (type1 > type2) {
-                        winner = table.first;
-                        loser = table.second;
-                        break;
-                      }
-                      else if (type2 > type1) {
-                        winner = table.second;
-                        loser = table.first;
-                        break;
-                      }
-                      if (i === 1) {
-                        //Tie
-                      }
-                    }
-                    break;
-                  case 5:
-                    for (var i = 0; i < 5; i++) {
-                      var type1 = values[table.first.strength.type[i]];
-                      var type2 = value[table.second.strength.type[i]];
-                      if (type1 > type2) {
-                        winner = table.first;
-                        loser = table.second;
-                        break;
-                      }
-                      else if (type2 > type1) {
-                        winner = table.second;
-                        loser = table.first;
-                        break;
-                      }
-                      if (i === 4) {
-                        //Tie
-                      }
-                    }
-                    break;
-                  case 4:
-                    var type1 = values[table.first.strength.type[0]];
-                    var type2 = values[table.second.strength.type[0]];
-                    if (type1 > type2) {
-                      winner = table.first;
-                      loser = table.second;
-                    }
-                    else if (type2 > type1) {
-                      winner = table.second;
-                      loser = table.first;
-                    }
-                    else {
-                      //Tie
-                    }
-                    break;
-                  case 3:
-                    var type1 = values[table.first.strength.type[0]];
-                    var type2 = values[table.second.strength.type[1]];
-                    if (type1 > type2) {
-                      winner = table.first;
-                      loser = table.second;
-                    }
-                    else if (type2 > type1) {
-                      winner = table.second;
-                      loser = table.first;
-                    }
-                    else {
-                      for (var i = 0; i < 2; i++) {
-                        var kick1 = values[table.first.strength.kicker[i]];
-                        var kick2 = values[table.second.strength.kicker[i]];
-                        if (kick1 > kick2) {
-                          winner = table.first;
-                          loser = table.second;
-                          break;
-                        }
-                        else if (kick2 > kick1) {
-                          winner = table.second;
-                          loser = table.first;
-                          break;
-                        }
-                        if (i === 1) {
-                          //Tie
-                        }
-                      }
-                    }
-                    break;
-                  case 2:
-                    for (var i = 0; i < 2; i++) {
-                      var type1 = values[table.first.strength.type[i]];
-                      var type2 = values[table.second.strength.type[i]];
-                      if (type1 > type2) {
-                        winner = table.first;
-                        loser = table.second;
-                        break;
-                      }
-                      else if (type2 > type1) {
-                        winner = table.first;
-                        loser = table.second;
-                        break;
-                      }
-                      if (i === 1) {
-                        var kick1 = values[table.first.strength.kicker[0]];
-                        var kick2 = values[table.second.strength.kicker[0]];
-                        if (kick1 > kick2) {
-                          winner = table.first;
-                          loser = table.second;
-                        }
-                        else if (kick2 > kick1) {
-                          winner = table.second;
-                          loser = table.first;
-                        }
-                        else {
-                          //Tie
-                        }
-                      }
-                    }
-                    break;
-                  case 1:
-                    var type1 = values[table.first.strength.type[0]];
-                    var type2 = values[table.second.strength.type[1]];
-                    if (type1 > type2) {
-                      winner = table.first;
-                      loser = table.second;
-                    }
-                    else if (type2 > type1) {
-                      winner = table.second;
-                      loser = table.first;
-                    }
-                    else {
-                      for (var i = 0; i < 3; i++) {
-                        var kick1 = values[table.first.strength.kicker[i]];
-                        var kick2 = values[table.second.strength.kicker[i]];
-                        if (kick1 > kick2) {
-                          winner = table.first;
-                          loser = table.second;
-                          break;
-                        }
-                        else if (kick2 > kick1) {
-                          winner = table.second;
-                          loser = table.first;
-                        }
-                        if (i === 2) {
-                          //Tie
-                        }
-                      }
-                    }
-                    break;
-                  case 0:
-                    for (var i = 0; i < 5; i++) {
-                      var type1 = values[table.first.strength.type[i]];
-                      var type2 = values[table.second.strength.type[i]];
-                      if (type1 > type2) {
-                        winner = table.first;
-                        loser = table.second;
-                        break;
-                      }
-                      else if (type2 > type1) {
-                        winner = table.second;
-                        loser = table.first;
-                        break;
-                      }
-                      if (i === 4) {
-                        //Tie
-                      }
-                    }
-                    break;
-                }
-              }
-              var updateFirst = {
-                stage: 'setup',
-                action: 'update',
-                pot: 0,
-                hide: true,
-                hand: table.first.strength
-              }
-              var updateSecond = {
-                stage: 'setup',
-                action: 'update',
-                pot: 0,
-                hide: true,
-                hand: table.second.strength
-              }
-              if (table.first.player === winner.player) {
-                updateFirst.pstack = table.first.stack + table.pot;
-                updateFirst.oppstack = table.second.stack;
-                updateSecond.pstack = table.second.stack;
-                updateSecond.oppstack = table.first.stack + table.pot;
-              }
-              else {
-                updateSecond.pstack = table.second.stack + table.pot;
-                updateSecond.oppstack = table.first.stack;
-                updateFirst.pstack = table.first.stack;
-                updateFirst.oppstack = table.second.stack + table.pot;
-              }
-              io.emit(table.second.player, updateSecond);
-              io.emit(table.first.player, updateFirst);
-              table.newHand(winner, loser);
-              var first = {
-                action: 'setup',
-                table: data.table,
-                stage: tables[data.table].stage,
-                status: tables[data.table].status,
-                dealer: tables[data.table].first.dealer,
-                bb: tables[data.table].bb,
-                stack: tables[data.table].first.stack,
-                opp: {
-                  name: tables[data.table].second.player,
-                  stack: tables[data.table].second.stack
-                }
-              }
-              var second = {
-                action: 'setup',
-                table: data.table,
-                stage: tables[data.table].stage,
-                status: tables[data.table].status,
-                dealer: tables[data.table].second.dealer,
-                bb: tables[data.table].bb,
-                stack: tables[data.table].second.stack,
-                opp: {
-                  name: tables[data.table].first.player,
-                  stack: tables[data.table].first.stack
-                }
-              }
-              io.emit(tables[data.table].first.player, first);
-              io.emit(tables[data.table].second.player, second);
-            }
-            else {
-              //Allin action
-            }
-            break;
+      case 'open call':
+        table.pot = data.pot;
+        var update = {
+          action: 'call pre',
+          pot: data.pot,
+          stack: data.stack,
+          bb: Number(table.bb)
+        }
+        if (data.player == table.first.player) {
+          table.first.stack = data.stack;
+          io.emit(table.second.player, update);
+        }
+        else {
+          table.second.stack = data.stack;
+          io.emit(table.first.player, update);
         }
         break;
       case 'raise':
-        table.pot += data.amount;
+        table.pot = data.pot;
         var update = {
-          stage: table.stage,
-          pot: table.pot,
-          amount: data.amount,
-          action: 'raise'
+          action: 'raised',
+          pot: data.pot,
+          stack: data.stack,
+          raise: data.raise,
+          bb: Number(table.bb)
         }
-        if (table.first.player == data.player) {
-          table.first.stack -= data.amount;
-          update.oppstack = table.first.stack;
+        if (data.player == table.first.player) {
+          table.first.stack = data.stack;
           io.emit(table.second.player, update);
         }
         else {
-          table.second.stack -= data.amount;
-          update.oppstack = table.second.stack;
+          table.second.stack = data.stack;
+          io.emit(table.first.player, update);
+        }
+        break;
+      case 'call':
+        table.pot = data.pot;
+        var update = {
+          action: 'update opp',
+          pot: data.pot,
+          stack: data.stack,
+          bet: data.amount
+        }
+        if (data.player == table.first.player) {
+          table.first.stack = data.stack;
+          io.emit(table.second.player, update);
+        }
+        else {
+          table.second.stack = data.stack;
+          io.emit(table.first.player, update);
+        }
+        moveStage(table);
+        break;
+      case 'closing check':
+        moveStage(table);
+        break;
+      case 'bet':
+        table.pot = data.pot;
+        var update = {
+          action: 'open bet',
+          pot: data.pot,
+          bet: data.amount,
+          stack: data.stack,
+          bb: Number(table.bb)
+        }
+        if (data.player === table.first.player) {
+          table.first.stack = data.stack;
+          io.emit(table.second.player, update);
+        }
+        else {
+          table.second.stack = data.stack;
           io.emit(table.first.player, update);
         }
         break;
       case 'check':
-        switch(table.stage) {
-          case 'pre':
-            var update = {
-              stage: table.stage,
-              action: 'check',
-            }
-            if (table.first.player == data.player) {
-              io.emit(table.second.player, update);
-            }
-            else {
-              io.emit(table.first.player, update);
-            }
-            table.stage = 'flop';
-            table.deal();
-            var first = {
-              stage: table.stage,
-              action: 'deal flop',
-              cards: table.community,
-              dealer: table.first.dealer
-            }
-            var second = {
-              stage: table.stage,
-              action: 'deal flop',
-              cards: table.community,
-              dealer: table.second.dealer
-            }
-            io.emit(table.first.player, first);
-            io.emit(table.second.player, second);
-            break;
-          case 'flop':
-            if (data.action === 'open') {
-              var update = {
-                stage: table.stage,
-                action: 'check'
-              }
-              if (table.first.player == data.player) {
-                io.emit(table.second.player, update);
-              }
-              else {
-                io.emit(table.first.player, update);
-              }
-            }
-            else {
-              table.stage = 'turn';
-              table.deal();
-              var first = {
-                stage: table.stage,
-                action: 'deal turn',
-                cards: table.community,
-                dealer: table.first.dealer
-              }
-              var second = {
-                stage: table.stage,
-                action: 'deal turn',
-                cards: table.community,
-                dealer: table.second.dealer
-              }
-              io.emit(table.first.player, first);
-              io.emit(table.second.player, second);
-            }
-            break;
-          case 'turn':
-            if (data.action === 'open') {
-              var update = {
-                stage: table.stage,
-                action: 'check'
-              }
-              if (table.first.player == data.player) {
-                io.emit(table.second.player, update);
-              }
-              else {
-                io.emit(table.first.player, update);
-              }
-            }
-            else {
-              table.stage = 'river';
-              table.deal();
-              var first = {
-                stage: table.stage,
-                action: 'deal river',
-                cards: table.community,
-                dealer: table.first.dealer
-              }
-              var second = {
-                stage: table.stage,
-                action: 'deal river',
-                cards: table.community,
-                dealer: table.second.dealer
-              }
-              io.emit(table.first.player, first);
-              io.emit(table.second.player, second);
-            }
-            break;
-          case 'river':
-            if (data.action === 'open') {
-              var update = {
-                stage: table.stage,
-                action: 'check'
-              }
-              if (table.first.player == data.player) {
-                io.emit(table.second.player, update);
-              }
-              else {
-                io.emit(table.first.player, update);
-              }
-            }
-            else {
-              table.stage = 'showdown';
-              table.showdown(table.first);
-              table.showdown(table.second);
-              var winner = "";
-              var loser = "";
-              if (table.first.strength.value > table.second.strength.value) {
-                winner = table.first;
-                loser = table.second;
-              }
-              else if (table.first.strength.value < table.second.strength.value) {
-                winner = table.second;
-                loser = table.first;
-              }
-              else {
-                var values = {
-                  '2': 0,
-                  '3': 1,
-                  '4': 2,
-                  '5': 3,
-                  '6': 4,
-                  '7': 5,
-                  '8': 6,
-                  '9': 7,
-                  'T': 8,
-                  'J': 9,
-                  'Q': 10,
-                  'K': 11,
-                  'A': 12
-                }
-                switch(table.first.strength.value) {
-                  case 9:
-                    //Tie
-                    break;
-                  case 8:
-                    var type1 = values[table.first.strength.type[0]];
-                    var type2 = values[table.second.strength.type[0]];
-                    if (type1 > type2) {
-                      winner = table.first;
-                      loser = table.second;
-                    }
-                    else if (type2 > type1) {
-                      winner = table.second;
-                      loser = table.first;
-                    }
-                    else {
-                      //Tie
-                    }
-                    break;
-                  case 7:
-                    var type1 = values[table.first.strength.type[0]];
-                    var type2 = values[table.second.strength.type[0]];
-                    if (type1 > type2) {
-                      winner = table.first;
-                      loser = table.second;
-                    }
-                    else if (type2 > type1) {
-                      winner = table.second;
-                      loser = table.first;
-                    }
-                    else {
-                      var kick1 = values[table.first.strength.kicker[0]];
-                      var kick2 = values[table.second.strength.kicker[0]];
-                      if (kick1 > kick2) {
-                        winner = table.first;
-                        loser = table.second;
-                      }
-                      else if (kick2 > kick1){
-                        winner = table.second;
-                        loser = table.first;
-                      }
-                      else {
-                        //Tie
-                      }
-                    }
-                    break;
-                  case 6:
-                    for (var i = 0; i < 2; i++) {
-                      var type1 = values[table.first.strength.type[i]];
-                      var type2 = values[table.second.strength.type[i]];
-                      if (type1 > type2) {
-                        winner = table.first;
-                        loser = table.second;
-                        break;
-                      }
-                      else if (type2 > type1) {
-                        winner = table.second;
-                        loser = table.first;
-                        break;
-                      }
-                      if (i === 1) {
-                        //Tie
-                      }
-                    }
-                    break;
-                  case 5:
-                    for (var i = 0; i < 5; i++) {
-                      var type1 = values[table.first.strength.type[i]];
-                      var type2 = value[table.second.strength.type[i]];
-                      if (type1 > type2) {
-                        winner = table.first;
-                        loser = table.second;
-                        break;
-                      }
-                      else if (type2 > type1) {
-                        winner = table.second;
-                        loser = table.first;
-                        break;
-                      }
-                      if (i === 4) {
-                        //Tie
-                      }
-                    }
-                    break;
-                  case 4:
-                    var type1 = values[table.first.strength.type[0]];
-                    var type2 = values[table.second.strength.type[0]];
-                    if (type1 > type2) {
-                      winner = table.first;
-                      loser = table.second;
-                    }
-                    else if (type2 > type1) {
-                      winner = table.second;
-                      loser = table.first;
-                    }
-                    else {
-                      //Tie
-                    }
-                    break;
-                  case 3:
-                    var type1 = values[table.first.strength.type[0]];
-                    var type2 = values[table.second.strength.type[1]];
-                    if (type1 > type2) {
-                      winner = table.first;
-                      loser = table.second;
-                    }
-                    else if (type2 > type1) {
-                      winner = table.second;
-                      loser = table.first;
-                    }
-                    else {
-                      for (var i = 0; i < 2; i++) {
-                        var kick1 = values[table.first.strength.kicker[i]];
-                        var kick2 = values[table.second.strength.kicker[i]];
-                        if (kick1 > kick2) {
-                          winner = table.first;
-                          loser = table.second;
-                          break;
-                        }
-                        else if (kick2 > kick1) {
-                          winner = table.second;
-                          loser = table.first;
-                          break;
-                        }
-                        if (i === 1) {
-                          //Tie
-                        }
-                      }
-                    }
-                    break;
-                  case 2:
-                    for (var i = 0; i < 2; i++) {
-                      var type1 = values[table.first.strength.type[i]];
-                      var type2 = values[table.second.strength.type[i]];
-                      if (type1 > type2) {
-                        winner = table.first;
-                        loser = table.second;
-                        break;
-                      }
-                      else if (type2 > type1) {
-                        winner = table.first;
-                        loser = table.second;
-                        break;
-                      }
-                      if (i === 1) {
-                        var kick1 = values[table.first.strength.kicker[0]];
-                        var kick2 = values[table.second.strength.kicker[0]];
-                        if (kick1 > kick2) {
-                          winner = table.first;
-                          loser = table.second;
-                        }
-                        else if (kick2 > kick1) {
-                          winner = table.second;
-                          loser = table.first;
-                        }
-                        else {
-                          //Tie
-                        }
-                      }
-                    }
-                    break;
-                  case 1:
-                    var type1 = values[table.first.strength.type[0]];
-                    var type2 = values[table.second.strength.type[1]];
-                    if (type1 > type2) {
-                      winner = table.first;
-                      loser = table.second;
-                    }
-                    else if (type2 > type1) {
-                      winner = table.second;
-                      loser = table.first;
-                    }
-                    else {
-                      for (var i = 0; i < 3; i++) {
-                        var kick1 = values[table.first.strength.kicker[i]];
-                        var kick2 = values[table.second.strength.kicker[i]];
-                        if (kick1 > kick2) {
-                          winner = table.first;
-                          loser = table.second;
-                          break;
-                        }
-                        else if (kick2 > kick1) {
-                          winner = table.second;
-                          loser = table.first;
-                        }
-                        if (i === 2) {
-                          //Tie
-                        }
-                      }
-                    }
-                    break;
-                  case 0:
-                    for (var i = 0; i < 5; i++) {
-                      var type1 = values[table.first.strength.type[i]];
-                      var type2 = values[table.second.strength.type[i]];
-                      if (type1 > type2) {
-                        winner = table.first;
-                        loser = table.second;
-                        break;
-                      }
-                      else if (type2 > type1) {
-                        winner = table.second;
-                        loser = table.first;
-                        break;
-                      }
-                      if (i === 4) {
-                        //Tie
-                      }
-                    }
-                    break;
-                }
-              }
-              var updateFirst = {
-                stage: 'setup',
-                action: 'update',
-                pot: 0,
-                hide: true,
-                hand: table.first.strength
-              }
-              var updateSecond = {
-                stage: 'setup',
-                action: 'update',
-                pot: 0,
-                hide: true,
-                hand: table.second.strength
-              }
-              if (table.first.player === winner.player) {
-                updateFirst.pstack = table.first.stack + table.pot;
-                updateFirst.oppstack = table.second.stack;
-                updateSecond.pstack = table.second.stack;
-                updateSecond.oppstack = table.first.stack + table.pot;
-              }
-              else {
-                updateSecond.pstack = table.second.stack + table.pot;
-                updateSecond.oppstack = table.first.stack;
-                updateFirst.pstack = table.first.stack;
-                updateFirst.oppstack = table.second.stack + table.pot;
-              }
-              io.emit(table.second.player, updateSecond);
-              io.emit(table.first.player, updateFirst);
-              table.newHand(winner, loser);
-              var first = {
-                action: 'setup',
-                table: data.table,
-                stage: tables[data.table].stage,
-                status: tables[data.table].status,
-                dealer: tables[data.table].first.dealer,
-                bb: tables[data.table].bb,
-                stack: tables[data.table].first.stack,
-                opp: {
-                  name: tables[data.table].second.player,
-                  stack: tables[data.table].second.stack
-                }
-              }
-              var second = {
-                action: 'setup',
-                table: data.table,
-                stage: tables[data.table].stage,
-                status: tables[data.table].status,
-                dealer: tables[data.table].second.dealer,
-                bb: tables[data.table].bb,
-                stack: tables[data.table].second.stack,
-                opp: {
-                  name: tables[data.table].first.player,
-                  stack: tables[data.table].first.stack
-                }
-              }
-              io.emit(tables[data.table].first.player, first);
-              io.emit(tables[data.table].second.player, second);
-            }
-            break;
-        }
-        break;
-      case 'bet':
-        table.pot += data.amount;
         var update = {
-          stage: table.stage,
-          pot: table.pot,
-          amount: data.amount,
-          action: 'bet'
+          action: 'checked',
+          bb: table.bb
         }
-        if (table.first.player == data.player) {
-          table.first.stack -= data.amount;
-          update.oppstack = table.first.stack;
+        if (data.player == table.first.player) {
           io.emit(table.second.player, update);
         }
         else {
-          table.second.stack -= data.amount;
-          update.oppstack = table.second.stack;
           io.emit(table.first.player, update);
         }
         break;
     }
   });
+
+  function moveStage(table) {
+    switch(table.stage) {
+      case 'pre':
+        table.stage = 'flop';
+        var first = {
+          action: 'deal flop'
+        }
+        var second = {
+          action: 'deal flop'
+        }
+        break;
+      case 'flop':
+        table.stage = 'turn';
+        var first = {
+          action: 'deal turn'
+        }
+        var second = {
+          action: 'deal turn'
+        }
+        break;
+      case 'turn':
+        table.stage = 'river';
+        var first = {
+          action: 'deal river'
+        }
+        var second = {
+          action: 'deal river'
+        }
+        break;
+      case 'river':
+        table.stage = 'showdown';
+        table.evaluateHand(table.first);
+        table.evaluateHand(table.second);
+        var winner = determineWinner(table);
+        if (winner === 'tie') {
+          table.first.stack += table.pot / 2;
+          table.second.stack += table.pot / 2;
+        }
+        else {
+          winner.stack += table.pot;
+        }
+        table.pot = 0;
+        table.first.dealer = !table.first.dealer;
+        table.second.dealer = !table.second.dealer;
+        table.hand++;
+        var first = {
+          action: 'new hand',
+          hand: table.second.hand,
+          stack: table.first.stack,
+          oppstack: table.second.stack,
+          dealer: table.first.dealer,
+          number: table.hand,
+          bb: Number(table.bb)
+        }
+        var second = {
+          action: 'new hand',
+          hand: table.first.hand,
+          stack: table.second.stack,
+          oppstack: table.first.stack,
+          dealer: table.second.dealer,
+          number: table.hand,
+          bb: Number(table.bb)
+        }
+        io.emit(table.first.player, first);
+        io.emit(table.second.player, second);
+        table.newHand();
+        return;
+    }
+    table.deal();
+    first.dealer = table.first.dealer;
+    first.cards = table.community;
+    first.bb = Number(table.bb);
+    second.dealer = table.second.dealer;
+    second.cards = table.community;
+    second.bb = Number(table.bb);
+    io.emit(table.first.player, first);
+    io.emit(table.second.player, second);
+  }
+
+  function determineWinner(table) {
+    if (table.first.strength.value > table.second.strength.value) {
+      return table.first;
+    }
+    else if (table.first.strength.value < table.second.strength.value) {
+      return table.second;
+    }
+    else {
+      var values = {
+        '2': 0,
+        '3': 1,
+        '4': 2,
+        '5': 3,
+        '6': 4,
+        '7': 5,
+        '8': 6,
+        '9': 7,
+        'T': 8,
+        'J': 9,
+        'Q': 10,
+        'K': 11,
+        'A': 12
+      }
+      switch(table.first.strength.value) {
+        case 9:
+          return 'tie';
+          break;
+        case 8:
+          var type1 = values[table.first.strength.type[0]];
+          var type2 = values[table.second.strength.type[0]];
+          if (type1 > type2) {
+            return table.first;
+          }
+          else if (type2 > type1) {
+            return table.second;
+          }
+          else {
+            return 'tie';
+          }
+          break;
+        case 7:
+          var type1 = values[table.first.strength.type[0]];
+          var type2 = values[table.second.strength.type[0]];
+          if (type1 > type2) {
+            return table.first;
+          }
+          else if (type2 > type1) {
+            return table.second;
+          }
+          else {
+            var kick1 = values[table.first.strength.kicker[0]];
+            var kick2 = values[table.second.strength.kicker[0]];
+            if (kick1 > kick2) {
+              return table.first;
+            }
+            else if (kick2 > kick1){
+              return table.second;
+            }
+            else {
+              return 'tie';
+            }
+          }
+          break;
+        case 6:
+          for (var i = 0; i < 2; i++) {
+            var type1 = values[table.first.strength.type[i]];
+            var type2 = values[table.second.strength.type[i]];
+            if (type1 > type2) {
+              return table.first;
+              break;
+            }
+            else if (type2 > type1) {
+              return table.second;
+              break;
+            }
+            if (i === 1) {
+              return 'tie';
+            }
+          }
+          break;
+        case 5:
+          for (var i = 0; i < 5; i++) {
+            var type1 = values[table.first.strength.type[i]];
+            var type2 = values[table.second.strength.type[i]];
+            if (type1 > type2) {
+              return table.first;
+              break;
+            }
+            else if (type2 > type1) {
+              return table.second;
+              break;
+            }
+            if (i === 4) {
+              return 'tie';
+            }
+          }
+          break;
+        case 4:
+          var type1 = values[table.first.strength.type[0]];
+          var type2 = values[table.second.strength.type[0]];
+          if (type1 > type2) {
+            return table.first;
+          }
+          else if (type2 > type1) {
+            return table.second;
+          }
+          else {
+            return 'tie';
+          }
+          break;
+        case 3:
+          var type1 = values[table.first.strength.type[0]];
+          var type2 = values[table.second.strength.type[1]];
+          if (type1 > type2) {
+            return table.first;
+          }
+          else if (type2 > type1) {
+            return table.second;
+          }
+          else {
+            for (var i = 0; i < 2; i++) {
+              var kick1 = values[table.first.strength.kicker[i]];
+              var kick2 = values[table.second.strength.kicker[i]];
+              if (kick1 > kick2) {
+                return table.first;
+                break;
+              }
+              else if (kick2 > kick1) {
+                return table.second;
+                break;
+              }
+              if (i === 1) {
+                return 'tie';
+              }
+            }
+          }
+          break;
+        case 2:
+          for (var i = 0; i < 2; i++) {
+            var type1 = values[table.first.strength.type[i]];
+            var type2 = values[table.second.strength.type[i]];
+            if (type1 > type2) {
+              return table.first;
+              break;
+            }
+            else if (type2 > type1) {
+              return table.second;
+              break;
+            }
+            if (i === 1) {
+              var kick1 = values[table.first.strength.kicker[0]];
+              var kick2 = values[table.second.strength.kicker[0]];
+              if (kick1 > kick2) {
+                return table.first;
+              }
+              else if (kick2 > kick1) {
+                return table.second;
+              }
+              else {
+                return 'tie';
+              }
+            }
+          }
+          break;
+        case 1:
+          var type1 = values[table.first.strength.type[0]];
+          var type2 = values[table.second.strength.type[0]];
+          if (type1 > type2) {
+            return table.first;
+          }
+          else if (type2 > type1) {
+            return table.second;
+          }
+          else {
+            for (var i = 0; i < 3; i++) {
+              var kick1 = values[table.first.strength.kicker[i]];
+              var kick2 = values[table.second.strength.kicker[i]];
+              if (kick1 > kick2) {
+                return table.first;
+                break;
+              }
+              else if (kick2 > kick1) {
+                return table.second;
+              }
+              if (i === 2) {
+                return 'tie';
+              }
+            }
+          }
+          break;
+        case 0:
+          for (var i = 0; i < 5; i++) {
+            var type1 = values[table.first.strength.type[i]];
+            var type2 = values[table.second.strength.type[i]];
+            if (type1 > type2) {
+              return table.first;
+              break;
+            }
+            else if (type2 > type1) {
+              return table.second;
+              break;
+            }
+            if (i === 4) {
+              return 'tie';
+            }
+          }
+          break;
+      }
+    }
+  }
 })
 //Route of getting the active user
 app.get('/username', function(req, res) {
