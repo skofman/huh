@@ -671,6 +671,15 @@ io.on('connection', function(socket) {
         break;
     }
   });
+  socket.on('chat', function(data) {
+    console.log(data);
+    var message = data.player + ': ' + data.message;
+    console.log(message);
+    var update = {
+      message: message
+    }
+    io.emit(data.table, update);
+  });
 
   function moveStage(table) {
     switch(table.stage) {

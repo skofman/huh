@@ -59,7 +59,7 @@
   background-color: black;
   z-index: 1;
   width: 871px;
-  height: 600px;
+  height: 630px;
 }
 
 #player {
@@ -192,7 +192,7 @@
 
 #up {
   position: absolute;
-  top: 550px;
+  top: 580px;
   left: 770px;
   width: 100px;
   height: 50px;
@@ -202,7 +202,7 @@
 
 #down {
   position: absolute;
-  top: 550px;
+  top: 580px;
   left: 550px;
   width: 100px;
   height: 50px;
@@ -212,7 +212,7 @@
 
 #even {
   position: absolute;
-  top: 550px;
+  top: 580px;
   left: 660px;
   width: 100px;
   height: 50px;
@@ -290,4 +290,53 @@
   color: white;
   z-index: 3 !important;
   font-weight: bold;
+}
+
+#chat-box {
+  position: absolute;
+  top: 520px;
+  left: 30px;
+  height: 110px;
+  width: 470px;
+  z-index: 3 !important;
+  background-color: black;
+  border: 2px solid green;
+  border-radius: 5px;
+}
+
+#chat-input {
+  position: relative;
+  bottom: 5px;
+  left: 0;
+  z-index: 4 !important;
+  border-top: 2px solid green;
+  border-radius: 5px;
+  width: 470px !important;
+}
+
+#chat-field {
+  height: 20px;
+  font-size: 0.8em;
+  background-color: black;
+  color: white;
+}
+
+.post {
+  color: white;
+  font-size: 0.8em;
+  list-style: none;
+}
+
+#chatArea {
+  position: relative;
+  top: 0px;
+  height: 88px;
+  overflow-y: scroll;
+}
+
+#messages {
+  padding-left: 5px;
+  margin: 0;
+  height: auto;
+  margin-bottom: 3px;
 }

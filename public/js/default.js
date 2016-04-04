@@ -623,6 +623,14 @@ promise.then(function(value) {
           $('#up').text('Post BB').removeClass('hide');
           $('#dealer').css('left', '700px');
         }
+        socket.on(data.table, function(data) {
+          console.log('in here');
+          var item = document.createElement('li');
+
+          $(item).addClass('post').text(data.message).appendTo('#messages');
+          console.log($('#messages').height());
+          $('#chatArea').scrollTop($('#messages').height());
+        });
         break;
       case 'update opp':
         $('#pot h5').text(data.pot);
@@ -1078,4 +1086,19 @@ $('#bet-allin').click(function() {
     bet = Number($('#player p:last').text()) + Number($('#player-bet').text());
     $('#up').text('Raise to ' + bet);
   }
+});
+//Chat message sending to tables
+$('#chat-input').submit(function(event) {
+  event.preventDefault();
+
+  var message = $('#chat-field').val();
+  var payload = {
+    table: $('#table').attr('data-table'),
+    player: username,
+    message: message
+  }
+  console.log(payload);
+  socket.emit('chat', payload);
+  console.log('emmited');
+  document.getElementById('chat-input').reset();
 });
