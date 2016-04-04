@@ -351,3 +351,14 @@
   left: 780px;
   z-index: 3 !important;
 }
+
+#auto-blind {
+  position: absolute;
+  top: 495px;
+  left: 35px;
+  z-index: 3 !important;
+}
+
+#auto-blind label {
+  color: white;
+}

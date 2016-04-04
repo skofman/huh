@@ -865,13 +865,28 @@ promise.then(function(value) {
             $('#dealer').animate({
               left: '180px'
             }, 'slow');
-            $('#up').text('Post SB').removeClass('hide');
+            if ($('#auto-blind input').attr('checked')) {
+              setTimeout(function() {
+                $('#up').text('Post SB').click();
+              }, 456);
+
+            }
+            else {
+              $('#up').text('Post SB').removeClass('hide');
+            }
           }
           else {
             $('#dealer').animate({
               left: '700px'
             }, 'slow');
-            $('#up').text('Post BB').removeClass('hide');
+            if ($('#auto-blind input').attr('checked')) {
+              setTimeout(function() {
+                $('#up').text('Post BB').click();
+              }, 666);
+            }
+            else {
+              $('#up').text('Post BB').removeClass('hide');
+            }
           }
         },5000);
         break;
@@ -1153,3 +1168,7 @@ function clearTable() {
   $('#bet-selector').addClass('hide');
   $('.post').remove();
 }
+//Auto blind checkbox event
+$('#auto-blind input').change(function(event) {
+  $('#auto-blind input').attr('checked',event.target.checked);
+})
