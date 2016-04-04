@@ -624,11 +624,11 @@ promise.then(function(value) {
           $('#dealer').css('left', '700px');
         }
         socket.on(data.table, function(data) {
-          console.log('in here');
           var item = document.createElement('li');
-
+          if (data.message.split(' ')[0] === 'Dealer:') {
+            $(item).addClass('dealer-post');
+          }
           $(item).addClass('post').text(data.message).appendTo('#messages');
-          console.log($('#messages').height());
           $('#chatArea').scrollTop($('#messages').height());
         });
         break;
@@ -965,7 +965,8 @@ $('#even').click(function() {
       player: username,
       stack: stack,
       pot: pot,
-      amount: totalBet
+      amount: totalBet,
+      call: bet
     }
     if (Number(array[1]) === bb / 2) {
       payload.action = 'open call';
@@ -1097,8 +1098,6 @@ $('#chat-input').submit(function(event) {
     player: username,
     message: message
   }
-  console.log(payload);
   socket.emit('chat', payload);
-  console.log('emmited');
   document.getElementById('chat-input').reset();
 });

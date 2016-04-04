@@ -284,7 +284,6 @@ Table.prototype.evaluateHand = function(player) {
       var kicker = _.filter(values, function(value) {
         return value != trips[0];
       })
-      console.log(kicker);
       for (var j = 0; j < cards.length; j++) {
         if (_.includes(kicker, cards[j])) {
           player.strength.kicker.push(cards[j]);
@@ -494,6 +493,10 @@ io.on('connection', function(socket) {
     }
     io.emit(table.first.player, first);
     io.emit(table.second.player, second);
+    var post = {
+      message: 'Dealer: Welcome to the table!'
+    }
+    io.emit(data.table, post);
   });
   //Main play socket
   socket.on('play', function(data) {
@@ -518,6 +521,10 @@ io.on('connection', function(socket) {
           io.emit(table.first.player, update);
         }
         if (data.pot === bb * (3 / 2)) {
+          var post = {
+            message: 'Dealer: Players posted binds. Dealing hand!'
+          }
+          io.emit(data.table, post);
           table.stage = 'pre';
           table.deal();
           var first = {
@@ -538,6 +545,10 @@ io.on('connection', function(socket) {
         break;
       case 'fold':
         if (table.first.player == data.player) {
+          var post = {
+            message: 'Dealer: ' + table.first.player + ' folded. ' + table.second.player + ' wins ' + table.pot + '.'
+          }
+          io.emit(data.table, post);
           table.second.stack += table.pot;
           table.pot = 0;
           var update = {
@@ -548,6 +559,10 @@ io.on('connection', function(socket) {
           io.emit(table.second.player, update);
         }
         else {
+          var post = {
+            message: 'Dealer: ' + table.second.player + ' folded. ' + table.first.player + ' wins ' + table.pot + '.'
+          }
+          io.emit(data.table, post);
           table.first.stack += table.pot;
           table.pot = 0;
           var update = {
@@ -592,10 +607,18 @@ io.on('connection', function(socket) {
           bb: Number(table.bb)
         }
         if (data.player == table.first.player) {
+          var post = {
+            message: 'Dealer: ' + table.first.player + ' called ' + (update.bb / 2) + '.'
+          }
+          io.emit(data.table, post);
           table.first.stack = data.stack;
           io.emit(table.second.player, update);
         }
         else {
+          var post = {
+            message: 'Dealer: ' + table.second.player + ' called ' + (update.bb / 2) + '.'
+          }
+          io.emit(data.table, post);
           table.second.stack = data.stack;
           io.emit(table.first.player, update);
         }
@@ -610,10 +633,18 @@ io.on('connection', function(socket) {
           bb: Number(table.bb)
         }
         if (data.player == table.first.player) {
+          var post = {
+            message: 'Dealer: ' + table.first.player + ' raised to ' + data.raise + '.'
+          }
+          io.emit(data.table, post);
           table.first.stack = data.stack;
           io.emit(table.second.player, update);
         }
         else {
+          var post = {
+            message: 'Dealer: ' + table.second.player + ' raised to ' + data.raise + '.'
+          }
+          io.emit(data.table, post);
           table.second.stack = data.stack;
           io.emit(table.first.player, update);
         }
@@ -627,16 +658,36 @@ io.on('connection', function(socket) {
           bet: data.amount
         }
         if (data.player == table.first.player) {
+          var post = {
+            message: 'Dealer: ' + table.first.player + ' called ' + data.call + '.'
+          }
+          io.emit(data.table, post);
           table.first.stack = data.stack;
           io.emit(table.second.player, update);
         }
         else {
+          var post = {
+            message: 'Dealer: ' + table.second.player + ' called ' + data.call + '.'
+          }
+          io.emit(data.table, post);
           table.second.stack = data.stack;
           io.emit(table.first.player, update);
         }
         moveStage(table);
         break;
       case 'closing check':
+        if (data.player == table.first.player) {
+          var post = {
+            message: 'Dealer: ' + table.first.player + ' checks.'
+          }
+          io.emit(data.table, post);
+        }
+        else {
+          var post = {
+            message: 'Dealer: ' + table.second.player + ' checks.'
+          }
+          io.emit(data.table, post);
+        }
         moveStage(table);
         break;
       case 'bet':
@@ -649,10 +700,18 @@ io.on('connection', function(socket) {
           bb: Number(table.bb)
         }
         if (data.player === table.first.player) {
+          var post = {
+            message: 'Dealer: ' + table.first.player + ' bets ' + data.amount + '.'
+          }
+          io.emit(data.table, post);
           table.first.stack = data.stack;
           io.emit(table.second.player, update);
         }
         else {
+          var post = {
+            message: 'Dealer: ' + table.second.player + ' bets ' + data.amount + '.'
+          }
+          io.emit(data.table, post);
           table.second.stack = data.stack;
           io.emit(table.first.player, update);
         }
@@ -663,18 +722,24 @@ io.on('connection', function(socket) {
           bb: table.bb
         }
         if (data.player == table.first.player) {
+          var post = {
+            message: 'Dealer: ' + table.first.player + ' checks.'
+          }
+          io.emit(data.table, post);
           io.emit(table.second.player, update);
         }
         else {
+          var post = {
+            message: 'Dealer: ' + table.second.player + ' checks.'
+          }
+          io.emit(data.table, post);
           io.emit(table.first.player, update);
         }
         break;
     }
   });
   socket.on('chat', function(data) {
-    console.log(data);
     var message = data.player + ': ' + data.message;
-    console.log(message);
     var update = {
       message: message
     }
@@ -682,9 +747,19 @@ io.on('connection', function(socket) {
   });
 
   function moveStage(table) {
+    var tableNames = Object.keys(tables);
+    for (var i = 0; i < tableNames.length; i++) {
+      if (tables[tableNames[i]] === table) {
+        var tableName = tableNames[i];
+      }
+    }
     switch(table.stage) {
       case 'pre':
         table.stage = 'flop';
+        var post = {
+          message: 'Dealer: Dealing flop!'
+        }
+        io.emit(tableName, post);
         var first = {
           action: 'deal flop'
         }
@@ -694,6 +769,10 @@ io.on('connection', function(socket) {
         break;
       case 'flop':
         table.stage = 'turn';
+        var post = {
+          message: 'Dealer: Dealing turn!'
+        }
+        io.emit(tableName, post);
         var first = {
           action: 'deal turn'
         }
@@ -703,6 +782,10 @@ io.on('connection', function(socket) {
         break;
       case 'turn':
         table.stage = 'river';
+        var post = {
+          message: 'Dealer: Dealing river!'
+        }
+        io.emit(tableName, post);
         var first = {
           action: 'deal river'
         }
@@ -716,6 +799,10 @@ io.on('connection', function(socket) {
         table.evaluateHand(table.second);
         var winner = determineWinner(table);
         if (winner === 'tie') {
+          var post = {
+            message: 'Dealer: Tie hand. Chop the pot!'
+          }
+          io.emit(tableName, post);
           table.first.stack += table.pot / 2;
           table.second.stack += table.pot / 2;
         }
@@ -760,11 +847,47 @@ io.on('connection', function(socket) {
     io.emit(table.second.player, second);
   }
 
+  function valueString(value) {
+    switch(value.value) {
+      case 9:
+        return 'a Royal Flush.';
+      case 8:
+        return 'a Straight Flush. ' + value.type[0] + ' high.';
+      case 7:
+        return 'four of a kind ' + value.type[0] + '.';
+      case 6:
+        return 'a full house. ' + value.type[0] + ' over ' + value.type[1] + '.';
+      case 5:
+        return 'a flush. ' + value.type[0] + ' high.';
+      case 4:
+        return 'a straight. ' + value.type[0] + ' high.';
+      case 3:
+        return 'three of a kind ' + value.type[0] + '.';
+      case 2:
+        return 'two pair. ' + value.type[0] + ' and ' + value.type[1] + '.';
+      case 1:
+        return 'a pair of ' + value.type[0] + '.';
+    }
+  }
+
   function determineWinner(table) {
+    var tableNames = Object.keys(tables);
+    for (var i = 0; i < tableNames.length; i++) {
+      if (tables[tableNames[i]] === table) {
+        var tableName = tableNames[i];
+      }
+    }
+    var post = {
+      message: ""
+    }
     if (table.first.strength.value > table.second.strength.value) {
+      post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength);
+      io.emit(tableName, post);
       return table.first;
     }
     else if (table.first.strength.value < table.second.strength.value) {
+      post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength);
+      io.emit(tableName, post);
       return table.second;
     }
     else {
@@ -791,9 +914,13 @@ io.on('connection', function(socket) {
           var type1 = values[table.first.strength.type[0]];
           var type2 = values[table.second.strength.type[0]];
           if (type1 > type2) {
+            post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength);
+            io.emit(tableName, post);
             return table.first;
           }
           else if (type2 > type1) {
+            post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength);
+            io.emit(tableName, post);
             return table.second;
           }
           else {
@@ -804,18 +931,26 @@ io.on('connection', function(socket) {
           var type1 = values[table.first.strength.type[0]];
           var type2 = values[table.second.strength.type[0]];
           if (type1 > type2) {
+            post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength);
+            io.emit(tableName, post);
             return table.first;
           }
           else if (type2 > type1) {
+            post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength);
+            io.emit(tableName, post);
             return table.second;
           }
           else {
             var kick1 = values[table.first.strength.kicker[0]];
             var kick2 = values[table.second.strength.kicker[0]];
             if (kick1 > kick2) {
+              post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength) + ' and ' + table.first.strength.kicker[0] + 'kicker.';
+              io.emit(tableName, post);
               return table.first;
             }
             else if (kick2 > kick1){
+              post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength) + ' and ' + table.second.strength.kicker[0] + ' kicker.';
+              io.emit(tableName, post);
               return table.second;
             }
             else {
@@ -828,10 +963,14 @@ io.on('connection', function(socket) {
             var type1 = values[table.first.strength.type[i]];
             var type2 = values[table.second.strength.type[i]];
             if (type1 > type2) {
+              post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength);
+              io.emit(tableName, post);
               return table.first;
               break;
             }
             else if (type2 > type1) {
+              post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength);
+              io.emit(tableName, post);
               return table.second;
               break;
             }
@@ -845,10 +984,14 @@ io.on('connection', function(socket) {
             var type1 = values[table.first.strength.type[i]];
             var type2 = values[table.second.strength.type[i]];
             if (type1 > type2) {
+              post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength);
+              io.emit(tableName, post);
               return table.first;
               break;
             }
             else if (type2 > type1) {
+              post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength);
+              io.emit(tableName, post);
               return table.second;
               break;
             }
@@ -861,9 +1004,13 @@ io.on('connection', function(socket) {
           var type1 = values[table.first.strength.type[0]];
           var type2 = values[table.second.strength.type[0]];
           if (type1 > type2) {
+            post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength);
+            io.emit(tableName, post);
             return table.first;
           }
           else if (type2 > type1) {
+            post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength);
+            io.emit(tableName, post);
             return table.second;
           }
           else {
@@ -874,9 +1021,13 @@ io.on('connection', function(socket) {
           var type1 = values[table.first.strength.type[0]];
           var type2 = values[table.second.strength.type[1]];
           if (type1 > type2) {
+            post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength);
+            io.emit(tableName, post);
             return table.first;
           }
           else if (type2 > type1) {
+            post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength);
+            io.emit(tableName, post);
             return table.second;
           }
           else {
@@ -884,10 +1035,14 @@ io.on('connection', function(socket) {
               var kick1 = values[table.first.strength.kicker[i]];
               var kick2 = values[table.second.strength.kicker[i]];
               if (kick1 > kick2) {
+                post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength) + ' and ' + table.first.strength.kicker[i] + ' kicker.';
+                io.emit(tableName, post);
                 return table.first;
                 break;
               }
               else if (kick2 > kick1) {
+                post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength) + ' and ' + table.second.strength.kicker[i] + ' kicker.';
+                io.emit(tableName, post);
                 return table.second;
                 break;
               }
@@ -902,10 +1057,14 @@ io.on('connection', function(socket) {
             var type1 = values[table.first.strength.type[i]];
             var type2 = values[table.second.strength.type[i]];
             if (type1 > type2) {
+              post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength);
+              io.emit(tableName, post);
               return table.first;
               break;
             }
             else if (type2 > type1) {
+              post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength);
+              io.emit(tableName, post);
               return table.second;
               break;
             }
@@ -913,9 +1072,13 @@ io.on('connection', function(socket) {
               var kick1 = values[table.first.strength.kicker[0]];
               var kick2 = values[table.second.strength.kicker[0]];
               if (kick1 > kick2) {
+                post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength) + ' and ' + table.first.strength.kicker[0] + ' kicker.';
+                io.emit(tableName, post);
                 return table.first;
               }
               else if (kick2 > kick1) {
+                post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength) + ' and ' + table.second.strength.kicker[0] + ' kicker.';
+                io.emit(tableName, post);
                 return table.second;
               }
               else {
@@ -928,9 +1091,13 @@ io.on('connection', function(socket) {
           var type1 = values[table.first.strength.type[0]];
           var type2 = values[table.second.strength.type[0]];
           if (type1 > type2) {
+            post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength);
+            io.emit(tableName, post);
             return table.first;
           }
           else if (type2 > type1) {
+            post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength);
+            io.emit(tableName, post);
             return table.second;
           }
           else {
@@ -938,10 +1105,14 @@ io.on('connection', function(socket) {
               var kick1 = values[table.first.strength.kicker[i]];
               var kick2 = values[table.second.strength.kicker[i]];
               if (kick1 > kick2) {
+                post.message = 'Dealer: ' + table.first.player + ' wins with ' + valueString(table.first.strength) + ' and ' + table.first.strength.kicker[i] + ' kicker.';
+                io.emit(tableName, post);
                 return table.first;
                 break;
               }
               else if (kick2 > kick1) {
+                post.message = 'Dealer: ' + table.second.player + ' wins with ' + valueString(table.second.strength) + ' and ' + table.second.strength.kicker[i] + ' kicker.';
+                io.emit(tableName, post);
                 return table.second;
               }
               if (i === 2) {
@@ -955,10 +1126,14 @@ io.on('connection', function(socket) {
             var type1 = values[table.first.strength.type[i]];
             var type2 = values[table.second.strength.type[i]];
             if (type1 > type2) {
+              post.message = 'Dealer: ' + table.first.player + ' wins with ' + table.first.strength.type[i] + ' high.';
+              io.emit(tableName, post);
               return table.first;
               break;
             }
             else if (type2 > type1) {
+              post.message = 'Dealer: ' + table.second.player + ' wins with ' + table.second.strength.type[i] + ' high.';
+              io.emit(tableName, post);
               return table.second;
               break;
             }
@@ -970,6 +1145,7 @@ io.on('connection', function(socket) {
       }
     }
   }
+
 })
 //Route of getting the active user
 app.get('/username', function(req, res) {
