@@ -51,14 +51,13 @@ function User(pwd) {
   this.bankroll = 500;
   this.session = "";
   this.location = "";
+  this.sessions = [];
 }
 //Table constructor
 function Table(player, bb) {
   this.status = 'waiting',
   this.first = {
     player: player,
-    action: "",
-    amount: "",
     dealer: true,
     hand: [],
     strength: {
@@ -68,8 +67,6 @@ function Table(player, bb) {
     }
   },
   this.second = {
-    action: "",
-    amount: "",
     dealer: false,
     hand: [],
     strength: {
@@ -426,7 +423,7 @@ app.get('/checkuser/:name', function(req, res) {
     res.sendStatus(200);
   }
   else {
-    res.send(406);
+    res.sendStatus(406);
   }
 });
 //Socket on connection
@@ -437,6 +434,7 @@ io.on('connection', function(socket) {
       name = tableNames[Math.floor(Math.random() * tableNames.length)];
     }
     tables[name] = new Table(data.player, data.bb);
+    tables[name].first.startStack = data.buyin;
     tables[name].first.stack = data.buyin;
     updateFile('tables');
     users[data.player].bankroll -= data.buyin;
@@ -461,8 +459,10 @@ io.on('connection', function(socket) {
   });
   socket.on('join table', function(data) {
     var table = tables[data.table];
+    table.start = Date.now();
     table.second.player = data.player;
     table.second.stack = data.buyin;
+    table.second.startStack = data.buyin;
     table.status = 'ready';
     table.action = 'setup';
     var first = {
@@ -754,6 +754,20 @@ io.on('connection', function(socket) {
         users[table.second.player].bankroll += table.second.stack;
         delete tables[data.table];
         io.emit('my table', {status: 'remove'});
+        users[table.first.player].sessions.push({
+          opp: table.second.player,
+          hands: table.hand - 1,
+          outcome: table.first.stack - table.first.startStack,
+          start: table.start,
+          end: Date.now()
+        })
+        users[table.second.player].sessions.push({
+          opp: table.first.player,
+          hands: table.hand - 1,
+          outcome: table.second.stack - table.second.startStack,
+          start: table.start,
+          end: Date.now()
+        })
         updateFile('tables');
         updateFile('users');
         break;
@@ -1173,6 +1187,15 @@ app.get('/username', function(req, res) {
   for (name in users) {
     if (users[name].session == req.cookies.session) {
       res.send(name);
+    }
+  }
+});
+//Route of getting past sessions
+app.get('/sessions', function(req, res) {
+  for (key in users) {
+    if (users[key].session == req.cookies.session) {
+      var payload = JSON.stringify(users[key].sessions);
+      res.send(payload);
     }
   }
 });

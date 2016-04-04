@@ -362,3 +362,7 @@
 #auto-blind label {
   color: white;
 }
+
+#sessions .segment {
+  height: 70px;
+}

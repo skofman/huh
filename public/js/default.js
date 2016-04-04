@@ -409,26 +409,41 @@ $('#player-menu').click(function(event) {
       $('#new-table').addClass('hide');
       $('#join-table').addClass('hide');
       $('#active-game').addClass('hide');
+      $('#sessions').addClass('hide');
+      $('#sessions .segments').remove();
       break;
     case 'Your table':
       $('#info').addClass('hide');
       $('#new-table').removeClass('hide');
       $('#join-table').addClass('hide');
       $('#active-game').addClass('hide');
+      $('#sessions').addClass('hide');
+      $('#sessions .segments').remove();
       break;
     case 'Join table':
       $('#info').addClass('hide');
       $('#new-table').addClass('hide');
       $('#join-table').removeClass('hide');
       $('#active-game').addClass('hide');
+      $('#sessions').addClass('hide');
+      $('#sessions .segments').remove();
       break;
     case 'Active game':
       $('#active-game').removeClass('hide');
       $('#new-table').addClass('hide');
       $('#join-table').addClass('hide');
       $('#info').addClass('hide');
+      $('#sessions').addClass('hide');
+      $('#sessions .segments').remove();
       break;
     case 'Past sessions':
+      $('#active-game').addClass('hide');
+      $('#new-table').addClass('hide');
+      $('#join-table').addClass('hide');
+      $('#info').addClass('hide');
+      $('#sessions').removeClass('hide')
+      $('#sessions .segments').remove();
+      showSessions();
       break;
   }
 });
@@ -463,8 +478,6 @@ $('#create').click(function() {
   var bb = Number($('#start-buyin').attr('data-bb'));
   var buyin = Number($('#start-buyin').val());
   var balance = Number($('#dash-balance h5').text().trim());
-  console.log(balance);
-  console.log(buyin);
   if (buyin > bb * 150) {
     alert("You can't buy in for more than " + bb * 150);
     $('#start-buyin').val(bb * 150);
@@ -484,7 +497,6 @@ $('#create').click(function() {
   };
   $('#dash-balance h5').text(balance - buyin);
   $('#user-status p').text('Welcome, ' + username + '! Balance: ' + (balance - buyin));
-  console.log(data);
   socket.emit('create table', data);
 });
 //Receiving created table from the server
@@ -1172,3 +1184,63 @@ function clearTable() {
 $('#auto-blind input').change(function(event) {
   $('#auto-blind input').attr('checked',event.target.checked);
 })
+//Function getting past sessions
+function showSessions() {
+  var xhr = new XMLHttpRequest();
+
+  xhr.open('GET', '/sessions');
+  xhr.send();
+
+  xhr.onload = function(value) {
+    var array = JSON.parse(value.target.response);
+    var segments = document.createElement('div');
+
+    $(segments).addClass('ui segments').appendTo($('#sessions'));
+
+    for (var i = 0; i < array.length; i++) {
+
+      var segment = document.createElement('div');
+      var grid = document.createElement('div');
+
+      $(segment).addClass('ui segment session-tab').appendTo(segments);
+      $(grid).addClass('ui stackable five column grid').appendTo(segment);
+
+      for (key in array[i]) {
+        var col = document.createElement('div');
+        var info = document.createElement('p');
+        var bold = document.createElement('b');
+        switch(key) {
+          case 'outcome':
+            if (array[i].outcome < 0) {
+              $(info).text('Lost: ').css('color', 'red');
+              $(bold).text(-array[i].outcome);
+            }
+            else {
+              $(info).text('Won: ');
+              $(bold).text(array[i].outcome);
+            }
+            break;
+          case 'hands':
+            $(info).text('Hands played: ');
+            $(bold).text(array[i].hands);
+            break;
+          case 'opp':
+            $(info).text('Opponent: ');
+            $(bold).text(array[i].opp);
+            break;
+          case 'start':
+            var time = new Date(array[i].start);
+            $(info).text('Start: ' + time.toString().split(':').slice(0,2).join(':'));
+            break;
+          case 'end':
+            var time = new Date(array[i].end);
+            $(info).text('End: ' + time.toString().split(':').slice(0,2).join(':'));
+            break;
+        }
+        $(info).appendTo(col);
+        $(col).addClass('column').appendTo(grid);
+        $(bold).appendTo(info);
+      }
+    }
+  }
+}
