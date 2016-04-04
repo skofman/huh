@@ -344,3 +344,10 @@
 .dealer-post {
   color: #91A8D0;
 }
+
+#leave {
+  position: absolute;
+  top: 30px;
+  left: 780px;
+  z-index: 3 !important;
+}

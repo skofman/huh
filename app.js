@@ -736,6 +736,27 @@ io.on('connection', function(socket) {
           io.emit(table.first.player, update);
         }
         break;
+      case 'leave':
+        var update = {
+          action: 'player left',
+        }
+        if (data.player == table.first.player) {
+          table.second.stack += data.pot;
+          update.stack = table.second.stack;
+          io.emit(table.second.player, update);
+        }
+        else {
+          table.first.stack += data.pot;
+          update.stack = table.first.stack;
+          io.emit(table.first.player, update)
+        }
+        users[table.first.player].bankroll += table.first.stack;
+        users[table.second.player].bankroll += table.second.stack;
+        delete tables[data.table];
+        io.emit('my table', {status: 'remove'});
+        updateFile('tables');
+        updateFile('users');
+        break;
     }
   });
   socket.on('chat', function(data) {

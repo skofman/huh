@@ -462,7 +462,9 @@ $('#start-minus').click(function() {
 $('#create').click(function() {
   var bb = Number($('#start-buyin').attr('data-bb'));
   var buyin = Number($('#start-buyin').val());
-  var balance = Number($('#dash-balance').text().trim());
+  var balance = Number($('#dash-balance h5').text().trim());
+  console.log(balance);
+  console.log(buyin);
   if (buyin > bb * 150) {
     alert("You can't buy in for more than " + bb * 150);
     $('#start-buyin').val(bb * 150);
@@ -482,6 +484,7 @@ $('#create').click(function() {
   };
   $('#dash-balance h5').text(balance - buyin);
   $('#user-status p').text('Welcome, ' + username + '! Balance: ' + (balance - buyin));
+  console.log(data);
   socket.emit('create table', data);
 });
 //Receiving created table from the server
@@ -508,7 +511,7 @@ $('#remove').click(function() {
   var stack = $('#table-info').text().split(' ');
   var balance = Number($('#dash-balance h5').text()) + Number(stack[stack.length - 1]);
   $('#dash-balance h5').text(balance);
-  $('#user-status').text('Welcome, ' + username + '! Balance: ' + balance);
+  $('#user-status p').text('Welcome, ' + username + '! Balance: ' + balance);
   socket.emit('remove table', data);
 });
 //Populating existing tables
@@ -872,6 +875,15 @@ promise.then(function(value) {
           }
         },5000);
         break;
+      case 'player left':
+        var player = $('#opponent p:first').text();
+        alert(player + ' has left the table!');
+        $('#table').addClass('hide');
+        var balance = Number($('#dash-balance h5').text()) + data.stack;
+        $('#dash-balance h5').text(balance + ' ');
+        $('#user-status p').text('Welcome ' + username + '! Balance: ' + balance);
+        clearTable();
+        break;
     }
   });
 });
@@ -1101,3 +1113,43 @@ $('#chat-input').submit(function(event) {
   socket.emit('chat', payload);
   document.getElementById('chat-input').reset();
 });
+//Leave table button click
+$('#leave').click(function() {
+  var payload = {
+    table: $('#table').attr('data-table'),
+    player: username,
+    action: 'leave',
+    pot: Number($('#pot h5').text()),
+    stack: Number($('#player p:last').text())
+  }
+  var balance = Number($('#dash-balance h5').text());
+  $('#dash-balance h5').text(payload.stack + balance);
+  $('#user-status p').text('Welcome, ' + username + '! Balance: ' + (payload.stack + balance));
+  $('#table').addClass('hide');
+  socket.emit('play', payload);
+  clearTable();
+})
+//Function for clearing the table (default state)
+function clearTable() {
+  $('#player p:first').text('');
+  $('#player p:last').text('');
+  $('#opponent p:first').text('');
+  $('#opponent p:last').text('');
+  $('#player-bet').text('0');
+  $('#opp-bet').text('0');
+  $('#pot h5').text('0');
+  $('#player-card1').css({top: '-715px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
+  $('#player-card2').css({top: '-715px', left: '93px'}).attr('src','images/red.svg').addClass('hide');
+  $('#opp-card1').css({top: '-715px', left: '-129px'}).attr('src','images/red.svg').addClass('hide');
+  $('#opp-card2').css({top: '-1029px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
+  $('#com-card1').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  $('#com-card2').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  $('#com-card3').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  $('#com-card4').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  $('#com-card5').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  $('#up').addClass('hide');
+  $('#even').addClass('hide');
+  $('#down').addClass('hide');
+  $('#bet-selector').addClass('hide');
+  $('.post').remove();
+}
