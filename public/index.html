@@ -20,12 +20,45 @@
       </div>
     </div>
     <div class="item floated right hide" id="user-status">
+      <img src="">
       <p></p>
     </div>
     <div class="item floated right">
       <div class="ui button" id="show-login">Log in</div>
       <div class="ui primary button" id="show-signup">Sign up</div>
       <div class="ui primary button hide" id="logout">Log out</div>
+    </div>
+  </div>
+  <!-- Avatar selection modal -->
+  <div class="ui large modal" id="avatar-select">
+    <div class="ui center aligned header">Select your avatar</div>
+    <div class="content">
+      <div class="ui grid">
+        <div class="four wide column">
+          <img src="images/avatars/dog.jpg">
+        </div>
+        <div class="four wide column">
+          <img src="images/avatars/cat.jpg">
+        </div>
+        <div class="four wide column">
+          <img src="images/avatars/pig.jpg">
+        </div>
+        <div class="four wide column">
+          <img src="images/avatars/panda.jpg">
+        </div>
+        <div class="four wide column">
+          <img src="images/avatars/rooster.jpg">
+        </div>
+        <div class="four wide column">
+          <img src="images/avatars/monkey.jpg">
+        </div>
+        <div class="four wide column">
+          <img src="images/avatars/cow.jpg">
+        </div>
+        <div class="four wide column">
+          <img src="images/avatars/fox.jpg">
+        </div>
+      </div>
     </div>
   </div>
   <!-- leaderboard modal -->
@@ -133,6 +166,15 @@
               <div class="eight wide column" id="dash-user">
                 <h5></h5>
                 <i class="lock icon"></i>
+              </div>
+            </div>
+            <div class="row">
+              <div class="four wide column">
+                <h5>Avatar:</h5>
+              </div>
+              <div class="eight wide column" id="dash-avatar">
+                <img src="">
+                <i class="edit icon" id="edit-avatar"></i>
               </div>
             </div>
             <div class="row">
@@ -282,10 +324,12 @@
           <div class="wrapper">
             <img src="images/table2.jpg" id="table-img">
             <div id="player">
+              <img src="">
               <p></p>
               <p></p>
             </div>
             <div id="opponent">
+              <img src="">
               <p></p>
               <p></p>
             </div>

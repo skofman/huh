@@ -52,6 +52,7 @@ function User(pwd) {
   this.session = "";
   this.location = "";
   this.sessions = [];
+  this.avatar = 'images/avatars/none.png';
 }
 //Table constructor
 function Table(player, bb) {
@@ -352,7 +353,8 @@ app.get('/check', function(req, res) {
         first: users[key].firstname,
         last: users[key].lastname,
         loc: users[key].location,
-        tables: tables
+        tables: tables,
+        avatar: users[key].avatar
       }
     }
   }
@@ -376,7 +378,8 @@ app.post('/login', jsonParser, function(req, res) {
         first: users[req.body.username].firstname,
         last: users[req.body.username].lastname,
         loc: users[req.body.username].location,
-        tables: tables
+        tables: tables,
+        avatar: users[req.body.username].avatar
       };
       res.status(200).json(payload);
     }
@@ -476,7 +479,8 @@ io.on('connection', function(socket) {
         name: table.second.player,
         stack: table.second.stack
       },
-      hand: table.hand
+      hand: table.hand,
+      avatar: users[table.second.player].avatar
     }
     var second = {
       action: 'setup',
@@ -489,7 +493,8 @@ io.on('connection', function(socket) {
         name: table.first.player,
         stack: table.first.stack
       },
-      hand: table.hand
+      hand: table.hand,
+      avatar: users[table.first.player].avatar
     }
     io.emit(table.first.player, first);
     io.emit(table.second.player, second);

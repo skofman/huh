@@ -71,7 +71,10 @@
   width: 150px;
   height: 50px;
   z-index: 4 !important;
-  border-radius: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-top-left-radius: 25px;
+  border-bottom-left-radius: 25px;
   padding-top: 5px;
 }
 
@@ -84,17 +87,18 @@
   width: 150px;
   height: 50px;
   z-index: 4 !important;
-  border-radius: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border-top-left-radius: 25px;
+  border-bottom-left-radius: 25px;
   padding-top: 5px;
 }
 
-#player p {
-  color: white;
-  margin: 0;
-  text-align: center;
-}
-
+#player p,
 #opponent p {
+  position: relative;
+  top: -56px;
+  left: 20px;
   color: white;
   margin: 0;
   text-align: center;
@@ -365,4 +369,14 @@
 
 #sessions .segment {
   height: 70px;
+}
+
+#player img,
+#opponent img {
+  position: relative;
+  top: -6px;
+  left: -1px;
+  height: 50px;
+  width: 50px;
+  border-radius: 100%;
 }

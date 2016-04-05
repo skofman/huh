@@ -32,9 +32,11 @@ $('#login').submit(function(event) {
       $('#logout').removeClass('hide');
       $('#user-status').removeClass('hide');
       var data = JSON.parse(xhr.response);
-      $('#user-status p').text('Welcome, ' + data.name + '! Balance: ' + data.balance);
+      $('#user-status p').text(' Welcome, ' + data.name + '! Balance: ' + data.balance);
+      $('#user-status img').attr('src', data.avatar);
       $('#dash-user h5').text(data.name + ' ');
       username = data.name;
+      $('#dash-avatar img').attr('src', data.avatar);
       $('#dash-balance h5').text(data.balance + ' ');
       $('#dash-first h5').text(data.first + ' ');
       $('#dash-last h5').text(data.last + ' ');
@@ -108,9 +110,11 @@ $('#login').submit(function(event) {
       $('#logout').removeClass('hide');
       $('#user-status').removeClass('hide');
       var data = JSON.parse(xhr.response);
-      $('#user-status p').text('Welcome, ' + data.name + '! Balance: ' + data.balance);
+      $('#user-status p').text(' Welcome, ' + data.name + '! Balance: ' + data.balance);
+      $('#user-status img').attr('src', data.avatar);
       $('#dash-user h5').text(data.name + ' ');
       username = data.name;
+      $('#dash-avatar img').attr('src', data.avatar).css({'height': '25px', 'width': '25px'});
       $('#dash-balance h5').text(data.balance + ' ');
       $('#dash-first h5').text(data.first + ' ');
       $('#dash-last h5').text(data.last + ' ');
@@ -496,7 +500,7 @@ $('#create').click(function() {
     buyin: $('#start-buyin').val()
   };
   $('#dash-balance h5').text(balance - buyin);
-  $('#user-status p').text('Welcome, ' + username + '! Balance: ' + (balance - buyin));
+  $('#user-status p').text(' Welcome, ' + username + '! Balance: ' + (balance - buyin));
   socket.emit('create table', data);
 });
 //Receiving created table from the server
@@ -523,7 +527,7 @@ $('#remove').click(function() {
   var stack = $('#table-info').text().split(' ');
   var balance = Number($('#dash-balance h5').text()) + Number(stack[stack.length - 1]);
   $('#dash-balance h5').text(balance);
-  $('#user-status p').text('Welcome, ' + username + '! Balance: ' + balance);
+  $('#user-status p').text(' Welcome, ' + username + '! Balance: ' + balance);
   socket.emit('remove table', data);
 });
 //Populating existing tables
@@ -601,7 +605,7 @@ $('#game-grid').click(function(event) {
     }
     var balance = Number($('#dash-balance h5').text().trim()) - payload.buyin;
     $('#dash-balance h5').text(balance + ' ');
-    $('#user-status p').text('Welcome, ' + username + '! Balance: ' + balance);
+    $('#user-status p').text(' Welcome, ' + username + '! Balance: ' + balance);
     socket.emit('join table', payload);
   }
 });
@@ -627,8 +631,10 @@ promise.then(function(value) {
         $('#table').attr('data-table', data.table);
         $('#player p:first').text(username);
         $('#player p:last').text(data.stack);
+        $('#player img').attr('src', $('#dash-avatar img').attr('src'));
         $('#opponent p:first').text(data.opp.name);
         $('#opponent p:last').text(data.opp.stack);
+        $('#opponent img').attr('src', data.avatar);
         $('#table-session').text('Table: ' + data.table + ' - Blinds: ' + (Number(data.bb) / 2) + ' / ' + data.bb + " - No Limit Hold'em - Hand: " + data.hand);
         if (data.dealer) {
           $('#up').text('Post SB').removeClass('hide');
@@ -908,7 +914,7 @@ promise.then(function(value) {
         $('#table').addClass('hide');
         var balance = Number($('#dash-balance h5').text()) + data.stack;
         $('#dash-balance h5').text(balance + ' ');
-        $('#user-status p').text('Welcome ' + username + '! Balance: ' + balance);
+        $('#user-status p').text(' Welcome ' + username + '! Balance: ' + balance);
         clearTable();
         break;
     }
@@ -1151,7 +1157,7 @@ $('#leave').click(function() {
   }
   var balance = Number($('#dash-balance h5').text());
   $('#dash-balance h5').text(payload.stack + balance);
-  $('#user-status p').text('Welcome, ' + username + '! Balance: ' + (payload.stack + balance));
+  $('#user-status p').text(' Welcome, ' + username + '! Balance: ' + (payload.stack + balance));
   $('#table').addClass('hide');
   socket.emit('play', payload);
   clearTable();
@@ -1280,5 +1286,28 @@ $('#leaderboard').click(function() {
   $('#losers ol').remove();
   $('#win-val ul').remove();
   $('#lose-val ul').remove();
+})
+//Choosing avatar listener
+$('#edit-avatar').click(function() {
+  $('#avatar-select').modal('show');
+})
+//Choosing avatar
+$('#avatar-select').click(function(event) {
+  if ($(event.target).attr('src')) {
+    var avatar = $(event.target).attr('src');
+    $('#dash-avatar img').attr('src', avatar);
+    $('#user-status img').attr('src', avatar);
+    $('#avatar-select').modal('hide');
 
+    var path = '/update/' + username;
+    var payload = JSON.stringify({
+      avatar: avatar
+    });
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('POST', path);
+    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.send(payload);
+  }
 })
