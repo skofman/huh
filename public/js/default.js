@@ -1244,3 +1244,41 @@ function showSessions() {
     }
   }
 }
+//Leaderboard modal
+$('#leaderboard').click(function() {
+  var xhr = new XMLHttpRequest();
+
+  xhr.open('GET', '/leaders');
+  xhr.send();
+
+  xhr.onload = function() {
+    var obj = JSON.parse(xhr.response);
+    var winList = document.createElement('ol');
+    var loseList = document.createElement('ol');
+    var winValues = document.createElement('ul');
+    var loseValues = document.createElement('ul');
+    $(winList).appendTo($('#winners'));
+    $(loseList).appendTo($('#losers'));
+    $(winValues).css('list-style','none').appendTo($('#win-val'));
+    $(loseValues).css('list-style','none').appendTo($('#lose-val'));
+    for (var i = 0; i < obj.winners.length; i++) {
+      var item = document.createElement('li');
+      $(item).text(obj.winners[i].user + ':').appendTo(winList);
+      var val = document.createElement('li');
+      $(val).text(obj.winners[i].total).appendTo(winValues);
+    }
+    for (var j = 0; j < obj.losers.length; j++) {
+      var item = document.createElement('li');
+      $(item).text(obj.losers[j].user + ':').appendTo(loseList);
+      var val = document.createElement('li');
+      $(val).text('(' + (-obj.losers[j].total) + ')').css('color','red').appendTo(loseValues);
+    }
+  }
+
+  $('#leader-show').modal('show');
+  $('#winners ol').remove();
+  $('#losers ol').remove();
+  $('#win-val ul').remove();
+  $('#lose-val ul').remove();
+
+})

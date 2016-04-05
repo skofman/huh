@@ -1199,6 +1199,28 @@ app.get('/sessions', function(req, res) {
     }
   }
 });
+//Route to getting leaders
+app.get('/leaders', function(req, res) {
+  var update = {
+    winners: [],
+    losers: []
+  }
+  for (key in users) {
+    var total = 0;
+    for (var i = 0; i < users[key].sessions.length; i++) {
+      total+= users[key].sessions[i].outcome;
+    }
+    if (total >= 0) {
+      update.winners.push({'user': key, 'total': total})
+    }
+    else {
+      update.losers.push({'user': key, 'total': total});
+    }
+  }
+  update.winners = _.sortBy(update.winners, ['user','total']).reverse();
+  update.losers = _.sortBy(update.losers, ['user', 'total']);
+  res.send(JSON.stringify(update));
+});
 //Server listener
 server.listen(8080, function() {
   console.log('Listening on port 8080');
