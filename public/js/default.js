@@ -41,6 +41,15 @@ $('#login').submit(function(event) {
       $('#dash-first h5').text(data.first + ' ');
       $('#dash-last h5').text(data.last + ' ');
       $('#dash-loc h5').text(data.loc + ' ');
+      $('#player-card1').attr('src', data.deck);
+      $('#player-card2').attr('src', data.deck);
+      $('#opp-card1').attr('src', data.deck);
+      $('#opp-card2').attr('src', data.deck);
+      $('#com-card1').attr('src', data.deck);
+      $('#com-card2').attr('src', data.deck);
+      $('#com-card3').attr('src', data.deck);
+      $('#com-card4').attr('src', data.deck);
+      $('#com-card5').attr('src', data.deck);
       $('#main').removeClass('hide');
       //create active table
       for (key in data.tables) {
@@ -119,6 +128,16 @@ $('#login').submit(function(event) {
       $('#dash-first h5').text(data.first + ' ');
       $('#dash-last h5').text(data.last + ' ');
       $('#dash-loc h5').text(data.loc + ' ');
+      console.log(data);
+      $('#player-card1').attr('src', data.deck);
+      $('#player-card2').attr('src', data.deck);
+      $('#opp-card1').attr('src', data.deck);
+      $('#opp-card2').attr('src', data.deck);
+      $('#com-card1').attr('src', data.deck);
+      $('#com-card2').attr('src', data.deck);
+      $('#com-card3').attr('src', data.deck);
+      $('#com-card4').attr('src', data.deck);
+      $('#com-card5').attr('src', data.deck);
       $('#main').removeClass('hide');
       //create active tables
       for (key in data.tables) {
@@ -629,6 +648,7 @@ promise.then(function(value) {
         $('#table').removeClass('hide');
         $('#table').attr('data-bb', data.bb);
         $('#table').attr('data-table', data.table);
+        $('#table').attr('data-deck', data.deck);
         $('#player p:first').text(username);
         $('#player p:last').text(data.stack);
         $('#player img').attr('src', $('#dash-avatar img').attr('src'));
@@ -665,24 +685,24 @@ promise.then(function(value) {
           $('#player-card1').removeClass('hide');
           $('#player-card2').removeClass('hide');
           $('#opp-card1').animate({
-            top: '-545px',
-            left: '198px'
+            top: '200px',
+            left: '730px'
           }, 'slow', function() {
             $('#player-card1').animate({
-              top: '-545px',
-              left: '-60px'
+              top: '200px',
+              left: '30px'
             }, 'slow', function() {
-              var card = '/images/cards/' + data.hand[0] + '.svg';
+              var card = '/images/cards/' + data.hand[0] + '.png';
               $('#player-card1').attr('src', card);
               $('#opp-card2').animate({
-                left: '711px',
-                top: '-859px'
+                top: '200px',
+                left: '800px'
               }, 'slow', function() {
                 $('#player-card2').animate({
-                  top: '-545px',
-                  left: '-212px'
+                  top: '200px',
+                  left: '100px'
                 }, 'slow', function() {
-                  var card = '/images/cards/' + data.hand[1] + '.svg';
+                  var card = '/images/cards/' + data.hand[1] + '.png';
                   $('#player-card2').attr('src', card);
                   $('#down').removeClass('hide');
                   $('#even').text('Call ' + (data.bb / 2)).removeClass('hide');
@@ -699,24 +719,24 @@ promise.then(function(value) {
           $('#player-card1').removeClass('hide');
           $('#player-card2').removeClass('hide');
           $('#player-card1').animate({
-            top: '-545px',
-            left: '-60px'
+            top: '200px',
+            left: '30px'
           }, 'slow', function() {
-            var card = '/images/cards/' + data.hand[0] + '.svg';
+            var card = '/images/cards/' + data.hand[0] + '.png';
             $('#player-card1').attr('src', card);
             $('#opp-card1').animate({
-              top: '-545px',
-              left: '198px'
+              top: '200px',
+              left: '730px'
             }, 'slow', function() {
               $('#player-card2').animate({
-                top: '-545px',
-                left: '-212px'
+                top: '200px',
+                left: '100px'
               }, 'slow', function() {
-                var card = '/images/cards/' + data.hand[1] + '.svg';
+                var card = '/images/cards/' + data.hand[1] + '.png';
                 $('#player-card2').attr('src', card);
                 $('#opp-card2').animate({
-                  left: '711px',
-                  top: '-859px'
+                  top: '200px',
+                  left: '800px'
                 }, 'slow')
               })
             })
@@ -728,15 +748,16 @@ promise.then(function(value) {
         $('#pot h5').text(data.pot);
         $('#player-bet').text('0');
         $('#opp-bet').text('0');
-        $('#com-card1').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-        $('#com-card2').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-        $('#com-card3').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-        $('#com-card4').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-        $('#com-card5').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-        $('#player-card1').css({top: '-715px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
-        $('#player-card2').css({top: '-715px', left: '93px'}).attr('src','images/red.svg').addClass('hide');
-        $('#opp-card1').css({top: '-715px', left: '-129px'}).addClass('hide');
-        $('#opp-card2').css({top: '-1029px', left: '315px'}).addClass('hide');
+        var deck = $('#table').attr('data-deck');
+        $('#com-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+        $('#com-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+        $('#com-card3').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+        $('#com-card4').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+        $('#com-card5').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+        $('#player-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+        $('#player-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+        $('#opp-card1').css({top: '20px', left: '405px'}).addClass('hide');
+        $('#opp-card2').css({top: '20px', left: '405px'}).addClass('hide');
         var dealer = $('#dealer').css('left');
         if (dealer === '180px') {
           $('#dealer').animate({
@@ -777,22 +798,22 @@ promise.then(function(value) {
         $('#com-card2').removeClass('hide');
         $('#com-card3').removeClass('hide');
         $('#com-card1').animate({
-          top: '75px',
-          left: '185px'
+          top: '185px',
+          left: '265px'
         }, 'slow', function() {
           $('#com-card2').animate({
-            top: '75px',
-            left: '255px'
+            top: '185px',
+            left: '335px'
           }, 'slow', function() {
             $('#com-card3').animate({
-              top: '75px',
-              left: '325px'
+              top: '185px',
+              left: '405px'
             }, 'slow', function() {
-              var card1 = 'images/cards/' + data.cards[0] + '.svg';
+              var card1 = 'images/cards/' + data.cards[0] + '.png';
               $('#com-card1').attr('src', card1);
-              var card2 = 'images/cards/' + data.cards[1] + '.svg';
+              var card2 = 'images/cards/' + data.cards[1] + '.png';
               $('#com-card2').attr('src', card2);
-              var card3 = 'images/cards/' + data.cards[2] + '.svg';
+              var card3 = 'images/cards/' + data.cards[2] + '.png';
               $('#com-card3').attr('src', card3);
               if (!data.dealer) {
                 $('#down').removeClass('hide');
@@ -825,10 +846,10 @@ promise.then(function(value) {
         $('#even').attr('data-check','open');
         $('#com-card4').removeClass('hide');
         $('#com-card4').animate({
-          top: '75px',
-          left: '395px'
+          top: '185px',
+          left: '475px'
         }, 'slow', function() {
-          var card = 'images/cards/' + data.cards[3] + '.svg';
+          var card = 'images/cards/' + data.cards[3] + '.png';
           $('#com-card4').attr('src', card);
           if (!data.dealer) {
             $('#down').removeClass('hide');
@@ -844,10 +865,10 @@ promise.then(function(value) {
         $('#even').attr('data-check','open');
         $('#com-card5').removeClass('hide');
         $('#com-card5').animate({
-          top: '75px',
-          left: '465px'
+          top: '185px',
+          left: '545px'
         }, 'slow', function() {
-          var card = 'images/cards/' + data.cards[4] + '.svg';
+          var card = 'images/cards/' + data.cards[4] + '.png';
           $('#com-card5').attr('src', card);
           if (!data.dealer) {
             $('#down').removeClass('hide');
@@ -858,8 +879,8 @@ promise.then(function(value) {
         })
         break;
       case 'new hand':
-        $('#opp-card1').attr('src','images/cards/' + data.hand[0] + '.svg');
-        $('#opp-card2').attr('src','images/cards/' + data.hand[1] + '.svg');
+        $('#opp-card1').attr('src','images/cards/' + data.hand[0] + '.png');
+        $('#opp-card2').attr('src','images/cards/' + data.hand[1] + '.png');
         $('#player p:last').text(data.stack);
         $('#opponent p:last').text(data.oppstack);
         $('#pot h5').text('0');
@@ -867,15 +888,16 @@ promise.then(function(value) {
         $('#opp-bet').text('0');
         $('#even').attr('data-check','close');
         setTimeout(function() {
-          $('#player-card1').css({top: '-715px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
-          $('#player-card2').css({top: '-715px', left: '93px'}).attr('src','images/red.svg').addClass('hide');
-          $('#opp-card1').css({top: '-715px', left: '-129px'}).attr('src','images/red.svg').addClass('hide');
-          $('#opp-card2').css({top: '-1029px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
-          $('#com-card1').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-          $('#com-card2').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-          $('#com-card3').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-          $('#com-card4').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-          $('#com-card5').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+          deck = $('#table').attr('data-deck');
+          $('#player-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+          $('#player-card2').css({top: '20px', left: '400px'}).attr('src',deck).addClass('hide');
+          $('#opp-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+          $('#opp-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+          $('#com-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+          $('#com-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+          $('#com-card3').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+          $('#com-card4').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+          $('#com-card5').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
           var message = $('#table-session').text().split(' ');
           message[message.length - 1] = Number(message[message.length - 1]) + 1;
           $('#table-session').text(message.join(' '));
@@ -1053,16 +1075,17 @@ $('#down').click(function() {
   $('#bet-selector').addClass('hide');
   $('#even').addClass('hide');
   $('#down').addClass('hide');
-  $('#com-card1').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-  $('#com-card2').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-  $('#com-card3').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-  $('#com-card4').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-  $('#com-card5').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  var deck = $('#table').attr('data-deck');
+  $('#com-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#com-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#com-card3').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#com-card4').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#com-card5').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
   socket.emit('play', payload);
-  $('#player-card1').css({top: '-715px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
-  $('#player-card2').css({top: '-715px', left: '93px'}).attr('src','images/red.svg').addClass('hide');
-  $('#opp-card1').css({top: '-715px', left: '-129px'}).addClass('hide');
-  $('#opp-card2').css({top: '-1029px', left: '315px'}).addClass('hide');
+  $('#player-card1').css({top: '20', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#player-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#opp-card1').css({top: '20px', left: '405px'}).addClass('hide');
+  $('#opp-card2').css({top: '20px', left: '405px'}).addClass('hide');
   var dealer = $('#dealer').css('left');
   if (dealer === '180px') {
     $('#dealer').animate({
@@ -1171,15 +1194,16 @@ function clearTable() {
   $('#player-bet').text('0');
   $('#opp-bet').text('0');
   $('#pot h5').text('0');
-  $('#player-card1').css({top: '-715px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
-  $('#player-card2').css({top: '-715px', left: '93px'}).attr('src','images/red.svg').addClass('hide');
-  $('#opp-card1').css({top: '-715px', left: '-129px'}).attr('src','images/red.svg').addClass('hide');
-  $('#opp-card2').css({top: '-1029px', left: '315px'}).attr('src','images/red.svg').addClass('hide');
-  $('#com-card1').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-  $('#com-card2').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-  $('#com-card3').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-  $('#com-card4').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
-  $('#com-card5').css({top: '-89px', left: '328px'}).attr('src','images/red.svg').addClass('hide');
+  var deck = $('#table').attr('data-deck');
+  $('#player-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#player-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#opp-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#opp-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#com-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#com-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#com-card3').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#com-card4').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+  $('#com-card5').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
   $('#up').addClass('hide');
   $('#even').addClass('hide');
   $('#down').addClass('hide');
@@ -1311,3 +1335,25 @@ $('#avatar-select').click(function(event) {
     xhr.send(payload);
   }
 })
+//Choosing deck listener
+$('#change-deck').click(function(event) {
+  $('#deck-select').modal('show');
+})
+//Choosing deck
+$('#deck-select').click(function(event) {
+  if ($(event.target).attr('src')) {
+    var deck = $(event.target).attr('src');
+    $('#table').attr('data-deck', deck);
+    var path = '/update/' + username;
+    var payload = JSON.stringify({
+      deck: deck
+    });
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('POST', path);
+    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.send(payload);
+    $('#deck-select').modal('hide');
+  }
+});

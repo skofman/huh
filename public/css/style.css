@@ -105,40 +105,40 @@
 }
 
 #player-card1 {
-  position: relative;
-  top: -715px;
-  left: 315px;
-  height: 310px;
+  position: absolute;
+  top: 20px;
+  left: 405px;
+  height: 90px;
   margin: 0;
   padding: 0;
   z-index: 3 !important;
 }
 
 #player-card2 {
-  position: relative;
-  top: -715px;
-  left: 93px;
-  height: 310px;
+  position: absolute;
+  top: 20px;
+  left: 405px;
+  height: 90px;
   margin: 0;
   padding: 0;
   z-index: 3 !important;
 }
 
 #opp-card1 {
-  position: relative;
-  top: -715px;
-  left: -129px;
-  height: 310px;
+  position: absolute;
+  top: 20px;
+  left: 405px;
+  height: 90px;
   margin: 0;
   padding: 0;
   z-index: 3 !important;
 }
 
 #opp-card2 {
-  position: relative;
-  top: -1029px;
-  left: 315px;
-  height: 310px;
+  position: absolute;
+  top: 20px;
+  left: 405px;
+  height: 90px;
   margin: 0;
   padding: 0;
   z-index: 3 !important;
@@ -146,19 +146,19 @@
 
 #com-card1 {
   position: absolute;
-  top: -89px;
-  left: 328px;
-  height: 310px;
+  top: 20px;
+  left: 405px;
+  height: 90px;
   margin: 0;
   padding: 0;
   z-index: 3 !important;
 }
 
 #com-card2 {
-  position: absolute;;
-  top: -89px;
-  left: 328px;
-  height: 310px;
+  position: absolute;
+  top: 20px;
+  left: 405px;
+  height: 90px;
   margin: 0;
   padding: 0;
   z-index: 3 !important;
@@ -166,9 +166,9 @@
 
 #com-card3 {
   position: absolute;
-  top: -89px;
-  left: 328px;
-  height: 310px;
+  top: 20px;
+  left: 405px;
+  height: 90px;
   margin: 0;
   padding: 0;
   z-index: 3 !important;
@@ -176,9 +176,9 @@
 
 #com-card4 {
   position: absolute;
-  top: -89px;
-  left: 328px;
-  height: 310px;
+  top: 20px;
+  left: 405px;
+  height: 90px;
   margin: 0;
   padding: 0;
   z-index: 3 !important;
@@ -186,9 +186,9 @@
 
 #com-card5 {
   position: absolute;
-  top: -89px;
-  left: 328px;
-  height: 310px;
+  top: 20px;
+  left: 405px;
+  height: 90px;
   margin: 0;
   padding: 0;
   z-index: 3 !important;
@@ -379,4 +379,15 @@
   height: 50px;
   width: 50px;
   border-radius: 100%;
+}
+
+#change-deck {
+  position: absolute;
+  top: 465px;
+  left: 35px;
+  z-index: 3 !important;
+}
+
+#deck-select img {
+  height: 300px;
 }

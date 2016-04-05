@@ -53,6 +53,7 @@ function User(pwd) {
   this.location = "";
   this.sessions = [];
   this.avatar = 'images/avatars/none.png';
+  this.deck = 'images/decks/1.jpg';
 }
 //Table constructor
 function Table(player, bb) {
@@ -354,7 +355,8 @@ app.get('/check', function(req, res) {
         last: users[key].lastname,
         loc: users[key].location,
         tables: tables,
-        avatar: users[key].avatar
+        avatar: users[key].avatar,
+        deck: users[key].deck
       }
     }
   }
@@ -379,7 +381,8 @@ app.post('/login', jsonParser, function(req, res) {
         last: users[req.body.username].lastname,
         loc: users[req.body.username].location,
         tables: tables,
-        avatar: users[req.body.username].avatar
+        avatar: users[req.body.username].avatar,
+        deck: users[req.body.username].deck
       };
       res.status(200).json(payload);
     }
@@ -480,7 +483,8 @@ io.on('connection', function(socket) {
         stack: table.second.stack
       },
       hand: table.hand,
-      avatar: users[table.second.player].avatar
+      avatar: users[table.second.player].avatar,
+      deck: users[table.first.player].deck
     }
     var second = {
       action: 'setup',
@@ -494,7 +498,8 @@ io.on('connection', function(socket) {
         stack: table.first.stack
       },
       hand: table.hand,
-      avatar: users[table.first.player].avatar
+      avatar: users[table.first.player].avatar,
+      deck: users[table.second.player].deck
     }
     io.emit(table.first.player, first);
     io.emit(table.second.player, second);
@@ -583,7 +588,7 @@ io.on('connection', function(socket) {
         table.hand++;
         var first = {
           action: 'new hand',
-          hand: ['red','red'],
+          hand: [users[table.first.player].deck.slice(-5,-4),users[table.first.player].deck.slice(-5,-4)],
           stack: table.first.stack,
           oppstack: table.second.stack,
           dealer: table.first.dealer,
@@ -592,7 +597,7 @@ io.on('connection', function(socket) {
         }
         var second = {
           action: 'new hand',
-          hand: ['red','red'],
+          hand: [users[table.second.player].deck.slice(-5,-4),users[table.second.player].deck.slice(-5,-4)],
           stack: table.second.stack,
           oppstack: table.first.stack,
           dealer: table.second.dealer,
