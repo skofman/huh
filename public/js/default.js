@@ -1,5 +1,4 @@
-var socket = io.connect('http://localhost:8080');
-var username = "";
+var socket = io.connect('http://localhost:1337');
 
 $('#show-login').click(function() {
   $('#login-form').removeClass('hide');
@@ -26,76 +25,7 @@ $('#login').submit(function(event) {
 
   xhr.onload = function() {
     if (xhr.status === 200) {
-      $('#login-form').addClass('hide');
-      $('#show-login').addClass('hide');
-      $('#show-signup').addClass('hide');
-      $('#logout').removeClass('hide');
-      $('#user-status').removeClass('hide');
-      var data = JSON.parse(xhr.response);
-      $('#user-status p').text(' Welcome, ' + data.name + '! Balance: ' + data.balance);
-      $('#user-status img').attr('src', data.avatar);
-      $('#dash-user h5').text(data.name + ' ');
-      username = data.name;
-      $('#dash-avatar img').attr('src', data.avatar);
-      $('#dash-balance h5').text(data.balance + ' ');
-      $('#dash-first h5').text(data.first + ' ');
-      $('#dash-last h5').text(data.last + ' ');
-      $('#dash-loc h5').text(data.loc + ' ');
-      $('#player-card1').attr('src', data.deck);
-      $('#player-card2').attr('src', data.deck);
-      $('#opp-card1').attr('src', data.deck);
-      $('#opp-card2').attr('src', data.deck);
-      $('#com-card1').attr('src', data.deck);
-      $('#com-card2').attr('src', data.deck);
-      $('#com-card3').attr('src', data.deck);
-      $('#com-card4').attr('src', data.deck);
-      $('#com-card5').attr('src', data.deck);
-      $('#main').removeClass('hide');
-      //create active table
-      for (key in data.tables) {
-        var col = document.createElement('div');
-        var card = document.createElement('div');
-        var nameContent = document.createElement('div');
-        var name = document.createElement('div');
-        var gameContent = document.createElement('div');
-        var game = document.createElement('div');
-        var infoContent = document.createElement('div');
-        var playerName = document.createElement('div');
-        var gameInfo = document.createElement('div');
-        var gameNote = document.createElement('div');
-        var blindContent = document.createElement('div');
-        var amount = document.createElement('div');
-        var inputBox = document.createElement('div');
-        var label = document.createElement('p');
-        var input = document.createElement('input');
-        var btnContent = document.createElement('div');
-        var btn = document.createElement('button');
-
-        $(col).addClass('four wide column').appendTo('#game-grid');
-        $(card).addClass('ui card').appendTo(col);
-        $(nameContent).addClass('content').appendTo(card);
-        var idName = key + '-name';
-        $(name).addClass('center aligned header').attr('id', idName).text(key).appendTo(nameContent);
-        $(gameContent).addClass('content').appendTo(card);
-        $(game).addClass('center aligned description').text("No Limit Texas Hold'em").appendTo(gameContent);
-        $(infoContent).addClass('content').appendTo(card);
-        $(playerName).addClass('description').text('Player: ' + data.tables[key].first.player).appendTo(infoContent);
-        $(gameInfo).addClass('description').text('Blinds: ' + Number(data.tables[key].bb) / 2 + ' / ' + data.tables[key].bb).appendTo(infoContent);
-        $(gameNote).addClass('description').text('Minimum: ' + Number(data.tables[key].bb) * 40 + ' / Maximum: ' + Number(data.tables[key].bb) * 150).appendTo(infoContent);
-        $(blindContent).addClass('content').appendTo(card);
-        $(amount).addClass('center aligned description').appendTo(blindContent);
-        $(label).text('Enter your buy-in amount').appendTo(amount);
-        $(inputBox).addClass('ui fluid input').appendTo(amount);
-        var idValue = key + '-val';
-        $(input).attr({type: 'number', 'data-bb': data.tables[key].bb, id: idValue}).appendTo(inputBox);
-        $(btnContent).addClass('extra content').appendTo(card);
-        switch(data.tables[key].status) {
-          case 'waiting':
-            var text = 'Join table';
-            $(btn).addClass('ui fluid button').text(text).attr('id',key).appendTo(btnContent);
-            break;
-        }
-      }
+      showState();
     }
     else {
       $('#login-message p').text(xhr.responseText);
@@ -105,7 +35,7 @@ $('#login').submit(function(event) {
   document.getElementById('login').reset();
 });
 //check if user was logged in
-(function() {
+function showState() {
   var xhr = new XMLHttpRequest();
 
   xhr.open('GET', '/check');
@@ -113,22 +43,28 @@ $('#login').submit(function(event) {
 
   xhr.onload = function() {
     if (xhr.status === 200) {
-      $('#login-form').addClass('hide');
-      $('#show-login').addClass('hide');
-      $('#show-signup').addClass('hide');
-      $('#logout').removeClass('hide');
-      $('#user-status').removeClass('hide');
+      //Login successfull
       var data = JSON.parse(xhr.response);
-      $('#user-status p').text(' Welcome, ' + data.name + '! Balance: ' + data.balance);
-      $('#user-status img').attr('src', data.avatar);
-      $('#dash-user h5').text(data.name + ' ');
-      username = data.name;
-      $('#dash-avatar img').attr('src', data.avatar).css({'height': '25px', 'width': '25px'});
-      $('#dash-balance h5').text(data.balance + ' ');
-      $('#dash-first h5').text(data.first + ' ');
-      $('#dash-last h5').text(data.last + ' ');
-      $('#dash-loc h5').text(data.loc + ' ');
       console.log(data);
+      //Leaving an existing table
+      if (data.table.status === 'active') {
+        var payload = {
+          table: data.table.name,
+          player: data.username,
+          action: 'leave'
+        }
+        $('#table').attr('data-table',"");
+        socket.emit('play', payload);
+        clearTable();
+      }
+      //Updating dashboard
+      $('#dash-user h5').text(data.username + ' ');
+      $('#dash-avatar img').attr('src', data.avatar);
+      $('#dash-balance h5').text(data.balance + ' ');
+      $('#dash-first h5').text(data.firstname + ' ');
+      $('#dash-last h5').text(data.lastname + ' ');
+      $('#dash-loc h5').text(data.location + ' ');
+      //Updating deck
       $('#player-card1').attr('src', data.deck);
       $('#player-card2').attr('src', data.deck);
       $('#opp-card1').attr('src', data.deck);
@@ -138,64 +74,330 @@ $('#login').submit(function(event) {
       $('#com-card3').attr('src', data.deck);
       $('#com-card4').attr('src', data.deck);
       $('#com-card5').attr('src', data.deck);
-      $('#main').removeClass('hide');
-      //create active tables
-      for (key in data.tables) {
-        if (data.tables[key].first.player != $('#dash-user').text().trim()) {
-          var col = document.createElement('div');
-          var card = document.createElement('div');
-          var nameContent = document.createElement('div');
-          var name = document.createElement('div');
-          var gameContent = document.createElement('div');
-          var game = document.createElement('div');
-          var infoContent = document.createElement('div');
-          var playerName = document.createElement('div');
-          var gameInfo = document.createElement('div');
-          var gameNote = document.createElement('div');
-          var blindContent = document.createElement('div');
-          var amount = document.createElement('div');
-          var inputBox = document.createElement('div');
-          var label = document.createElement('p');
-          var input = document.createElement('input');
-          var btnContent = document.createElement('div');
-          var btn = document.createElement('button');
-
-          $(col).addClass('four wide column').appendTo('#game-grid');
-          $(card).addClass('ui card').appendTo(col);
-          $(nameContent).addClass('content').appendTo(card);
-          var idName = key + '-name';
-          $(name).addClass('center aligned header').attr('id', idName).text(key).appendTo(nameContent);
-          $(gameContent).addClass('content').appendTo(card);
-          $(game).addClass('center aligned description').text("No Limit Texas Hold'em").appendTo(gameContent);
-          $(infoContent).addClass('content').appendTo(card);
-          $(playerName).addClass('description').text('Player: ' + data.tables[key].first.player).appendTo(infoContent);
-          $(gameInfo).addClass('description').text('Blinds: ' + Number(data.tables[key].bb) / 2 + ' / ' + data.tables[key].bb).appendTo(infoContent);
-          $(gameNote).addClass('description').text('Minimum: ' + Number(data.tables[key].bb) * 40 + ' / Maximum: ' + Number(data.tables[key].bb) * 150).appendTo(infoContent);
-          $(blindContent).addClass('content').appendTo(card);
-          $(amount).addClass('center aligned description').appendTo(blindContent);
-          $(label).text('Enter your buy-in amount').appendTo(amount);
-          $(inputBox).addClass('ui fluid input').appendTo(amount);
-          var idValue = key + '-val';
-          $(input).attr({type: 'number', 'data-bb': data.tables[key].bb, id: idValue}).appendTo(inputBox);
-          $(btnContent).addClass('extra content').appendTo(card);
-          switch(data.tables[key].status) {
-            case 'waiting':
-              var text = 'Join table';
-              $(btn).addClass('ui fluid button').text(text).attr('id',key).appendTo(btnContent);
-              break;
-          }
-        }
-        else {
-          $('#table-name').text(key);
-          var info = 'Blinds: ' + Number(data.tables[key].bb) / 2 + ' / ' + data.tables[key].bb + ' -  Stack: ' + data.tables[key].first.stack;
-          $('#table-info').text(info);
-          $('#create-card').addClass('hide');
-          $('#remove-card').removeClass('hide');
-        }
+      //Updating table
+      if (data.table.status === 'waiting') {
+        $('#table-name').text(data.table.name);
+        $('#table-info').text('Blinds: ' + (data.table.bb / 2) + ' / ' + data.table.bb + ' - Stack: ' + data.table.stack);
+        $('#remove-card').removeClass('hide');
+        $('#create-card').addClass('hide');
       }
+      //Showing menu
+      $('#user-status').removeClass('hide');
+      $('#show-login').addClass('hide');
+      $('#show-signup').addClass('hide');
+      $('#logout').removeClass('hide');
+      $('#user-status img').attr('src', data.avatar);
+      $('#user-status p').text(' Welcome ' + data.username + '! Balance: ' + data.balance);
+      $('#login-form').addClass('hide');
+      $('#signup-form').addClass('hide');
+      $('#main').removeClass('hide');
+      socket.on(data.username, function(data) {
+        console.log(data);
+        switch(data.action) {
+          case 'setup':
+            console.log(data);
+            $('#table').removeClass('hide');
+            $('#table').attr('data-bb', data.bb);
+            $('#table').attr('data-table', data.table);
+            $('#table').attr('data-deck', data.deck);
+            $('#player p:first').text(data.username);
+            $('#player p:last').text(data.stack);
+            $('#player img').attr('src', $('#dash-avatar img').attr('src'));
+            $('#opponent p:first').text(data.opp.name);
+            $('#opponent p:last').text(data.opp.stack);
+            $('#opponent img').attr('src', data.opp.avatar);
+            $('#table-session').text('Table: ' + data.table + ' - Blinds: ' + (Number(data.bb) / 2) + ' / ' + data.bb + " - No Limit Hold'em - Hand: " + data.hand);
+            if (data.dealer) {
+              $('#up').text('Post SB').removeClass('hide');
+              $('#dealer').css('left', '180px');
+              $('#player-menu a:nth-child(4)').css('background-color','#91A8D0');
+              $('#remove-card').addClass('hide');
+            }
+            else {
+              $('#up').text('Post BB').removeClass('hide');
+              $('#dealer').css('left', '700px');
+            }
+            socket.on(data.table, function(data) {
+              var item = document.createElement('li');
+              if (data.message.split(' ')[0] === 'Dealer:') {
+                $(item).addClass('dealer-post');
+              }
+              $(item).addClass('post').text(data.message).appendTo('#messages');
+              $('#chatArea').scrollTop($('#messages').height());
+            });
+            break;
+          case 'update opp':
+            $('#pot h5').text(data.pot);
+            $('#opponent p:last').text(data.stack);
+            $('#opp-bet').text(data.bet);
+            break;
+          case 'deal':
+            if (data.dealer) {
+              $('#opp-card1').removeClass('hide');
+              $('#opp-card2').removeClass('hide');
+              $('#player-card1').removeClass('hide');
+              $('#player-card2').removeClass('hide');
+              $('#opp-card1').animate({
+                top: '200px',
+                left: '730px'
+              }, 'slow', function() {
+                $('#player-card1').animate({
+                  top: '200px',
+                  left: '30px'
+                }, 'slow', function() {
+                  var card = '/images/cards/' + data.hand[0] + '.png';
+                  $('#player-card1').attr('src', card);
+                  $('#opp-card2').animate({
+                    top: '200px',
+                    left: '800px'
+                  }, 'slow', function() {
+                    $('#player-card2').animate({
+                      top: '200px',
+                      left: '100px'
+                    }, 'slow', function() {
+                      var card = '/images/cards/' + data.hand[1] + '.png';
+                      $('#player-card2').attr('src', card);
+                      $('#down').removeClass('hide');
+                      $('#even').text('Call ' + (data.bb / 2)).removeClass('hide');
+                      $('#up').text('Raise to ' + (data.bb * 2)).removeClass('hide');
+                      $('#bet-selector').removeClass('hide');
+                    })
+                  })
+                })
+              })
+            }
+            else {
+              $('#opp-card1').removeClass('hide');
+              $('#opp-card2').removeClass('hide');
+              $('#player-card1').removeClass('hide');
+              $('#player-card2').removeClass('hide');
+              $('#player-card1').animate({
+                top: '200px',
+                left: '30px'
+              }, 'slow', function() {
+                var card = '/images/cards/' + data.hand[0] + '.png';
+                $('#player-card1').attr('src', card);
+                $('#opp-card1').animate({
+                  top: '200px',
+                  left: '730px'
+                }, 'slow', function() {
+                  $('#player-card2').animate({
+                    top: '200px',
+                    left: '100px'
+                  }, 'slow', function() {
+                    var card = '/images/cards/' + data.hand[1] + '.png';
+                    $('#player-card2').attr('src', card);
+                    $('#opp-card2').animate({
+                      top: '200px',
+                      left: '800px'
+                    }, 'slow')
+                  })
+                })
+              })
+            }
+            break;
+          case 'opp fold':
+            $('#player p:last').text(data.stack);
+            $('#pot h5').text(data.pot);
+            $('#player-bet').text('0');
+            $('#opp-bet').text('0');
+            var deck = $('#table').attr('data-deck');
+            $('#com-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+            $('#com-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+            $('#com-card3').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+            $('#com-card4').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+            $('#com-card5').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+            $('#player-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+            $('#player-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+            $('#opp-card1').css({top: '20px', left: '405px'}).addClass('hide');
+            $('#opp-card2').css({top: '20px', left: '405px'}).addClass('hide');
+            var dealer = $('#dealer').css('left');
+            if (dealer === '180px') {
+              $('#dealer').animate({
+                left: '700px'
+              }, 'slow');
+            }
+            else {
+              $('#dealer').animate({
+                left: '180px'
+              }, 'slow');
+            }
+            break;
+          case 'call pre':
+            $('#pot h5').text(data.pot);
+            $('#opponent p:last').text(data.stack);
+            $('#opp-bet').text(data.bb);
+            $('#down').removeClass('hide');
+            $('#even').text('Check').removeClass('hide');
+            $('#up').text('Raise to ' + (2 * data.bb)).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
+            break;
+          case 'raised':
+            $('#pot h5').text(data.pot);
+            $('#opponent p:last').text(data.stack);
+            $('#opp-bet').text(data.raise);
+            $('#down').removeClass('hide');
+            var call = data.raise - Number($('#player-bet').text());
+            $('#even').text('Call ' + call).removeClass('hide');
+            var raise = data.raise + data.bb;
+            $('#up').text('Raise to ' + raise).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
+            break;
+          case 'deal flop':
+            $('#player-bet').text('0');
+            $('#opp-bet').text('0');
+            $('#even').attr('data-check','open');
+            $('#com-card1').removeClass('hide');
+            $('#com-card2').removeClass('hide');
+            $('#com-card3').removeClass('hide');
+            $('#com-card1').animate({
+              top: '185px',
+              left: '265px'
+            }, 'slow', function() {
+              $('#com-card2').animate({
+                top: '185px',
+                left: '335px'
+              }, 'slow', function() {
+                $('#com-card3').animate({
+                  top: '185px',
+                  left: '405px'
+                }, 'slow', function() {
+                  var card1 = 'images/cards/' + data.cards[0] + '.png';
+                  $('#com-card1').attr('src', card1);
+                  var card2 = 'images/cards/' + data.cards[1] + '.png';
+                  $('#com-card2').attr('src', card2);
+                  var card3 = 'images/cards/' + data.cards[2] + '.png';
+                  $('#com-card3').attr('src', card3);
+                  if (!data.dealer) {
+                    $('#down').removeClass('hide');
+                    $('#even').text('Check').removeClass('hide');
+                    $('#up').text('Bet ' + data.bb).removeClass('hide');
+                    $('#bet-selector').removeClass('hide');
+                  }
+                })
+              })
+            });
+            break;
+          case 'open bet':
+            $('#pot h5').text(data.pot);
+            $('#opponent p:last').text(data.stack);
+            $('#opp-bet').text(data.bet);
+            $('#down').removeClass('hide');
+            $('#even').text('Call ' + data.bet).removeClass('hide');
+            $('#up').text('Raise to ' + (data.bet + data.bb)).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
+            break;
+          case 'checked':
+            $('#down').removeClass('hide');
+            $('#even').attr('data-check','close').text('Check').removeClass('hide');
+            $('#up').text('Bet ' + data.bb).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
+            break;
+          case 'deal turn':
+            $('#player-bet').text('0');
+            $('#opp-bet').text('0');
+            $('#even').attr('data-check','open');
+            $('#com-card4').removeClass('hide');
+            $('#com-card4').animate({
+              top: '185px',
+              left: '475px'
+            }, 'slow', function() {
+              var card = 'images/cards/' + data.cards[3] + '.png';
+              $('#com-card4').attr('src', card);
+              if (!data.dealer) {
+                $('#down').removeClass('hide');
+                $('#even').text('Check').removeClass('hide');
+                $('#up').text('Bet ' + data.bb).removeClass('hide');
+                $('#bet-selector').removeClass('hide');
+              }
+            })
+            break;
+          case 'deal river':
+            $('#player-bet').text('0');
+            $('#opp-bet').text('0');
+            $('#even').attr('data-check','open');
+            $('#com-card5').removeClass('hide');
+            $('#com-card5').animate({
+              top: '185px',
+              left: '545px'
+            }, 'slow', function() {
+              var card = 'images/cards/' + data.cards[4] + '.png';
+              $('#com-card5').attr('src', card);
+              if (!data.dealer) {
+                $('#down').removeClass('hide');
+                $('#even').text('Check').removeClass('hide');
+                $('#up').text('Bet ' + data.bb).removeClass('hide');
+                $('#bet-selector').removeClass('hide');
+              }
+            })
+            break;
+          case 'new hand':
+            $('#opp-card1').attr('src','images/cards/' + data.hand[0] + '.png');
+            $('#opp-card2').attr('src','images/cards/' + data.hand[1] + '.png');
+            $('#player p:last').text(data.stack);
+            $('#opponent p:last').text(data.oppstack);
+            $('#pot h5').text('0');
+            $('#player-bet').text('0');
+            $('#opp-bet').text('0');
+            $('#even').attr('data-check','close');
+            setTimeout(function() {
+              deck = $('#table').attr('data-deck');
+              $('#player-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+              $('#player-card2').css({top: '20px', left: '400px'}).attr('src',deck).addClass('hide');
+              $('#opp-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+              $('#opp-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+              $('#com-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+              $('#com-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+              $('#com-card3').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+              $('#com-card4').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+              $('#com-card5').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
+              var message = $('#table-session').text().split(' ');
+              message[message.length - 1] = Number(message[message.length - 1]) + 1;
+              $('#table-session').text(message.join(' '));
+              if (data.dealer) {
+                $('#dealer').animate({
+                  left: '180px'
+                }, 'slow');
+                if ($('#auto-blind input').attr('checked')) {
+                  setTimeout(function() {
+                    $('#up').text('Post SB').click();
+                  }, 456);
+
+                }
+                else {
+                  $('#up').text('Post SB').removeClass('hide');
+                }
+              }
+              else {
+                $('#dealer').animate({
+                  left: '700px'
+                }, 'slow');
+                if ($('#auto-blind input').attr('checked')) {
+                  setTimeout(function() {
+                    $('#up').text('Post BB').click();
+                  }, 666);
+                }
+                else {
+                  $('#up').text('Post BB').removeClass('hide');
+                }
+              }
+            },5000);
+            break;
+          case 'player left':
+            if (data.opponent) {
+              alert(data.opponent + ' has left the table!');
+            }
+            $('#dash-balance h5').text(data.balance + " ");
+            $('#user-status p').text(' Welcome ' + $('#dash-user h5').text().trim() + '! Balance: ' + data.balance);
+            $('#table').addClass('hide');
+            clearTable();
+            break;
+        }
+      });
     }
   }
-})();
+};
+showState();
 //sign up event listener
 $('#signup').submit(function(event) {
   event.preventDefault();
@@ -212,11 +414,7 @@ $('#signup').submit(function(event) {
 
   xhr.onload = function() {
     if (xhr.status === 200) {
-      var data = JSON.parse(xhr.response);
-      $('#signup-form').addClass('hide');
-      $('#login-user').val(data.name);
-      $('#login-pwd').val(data.pwd);
-      $('#login').submit();
+      showState();
     }
   }
   document.getElementById('signup').reset();
@@ -322,7 +520,7 @@ $('#info').click(function(event) {
 //Event listeners for updating user info
 $('#input-first').keypress(function(event) {
   if (event.charCode === 13) {
-    var path = '/update/' + username;
+    var path = '/update/' + $('#dash-user h5').text().trim();
     var payload = JSON.stringify({
       firstname: $('#input-first').val()
     });
@@ -348,7 +546,7 @@ $('#input-first').keypress(function(event) {
 
 $('#input-last').keypress(function(event) {
   if (event.charCode === 13) {
-    var path = '/update/' + username;
+    var path = '/update/' + $('#dash-user h5').text().trim();
     var payload = JSON.stringify({
       lastname: $('#input-last').val()
     });
@@ -400,7 +598,7 @@ $('#input-loc').keypress(function(event) {
 //Event for balance reset
 $('#reset-bal').click(function() {
   if (confirm('Are you sure?')) {
-    var path = '/update/' + username;
+    var path = '/update/' + $('#dash-user h5').text().trim();
     var payload = JSON.stringify({
       bankroll: 500
     });
@@ -457,6 +655,7 @@ $('#player-menu').click(function(event) {
       $('#join-table').addClass('hide');
       $('#info').addClass('hide');
       $('#sessions').addClass('hide');
+      $('#player-menu .active').css('background-color', "");
       $('#sessions .segments').remove();
       break;
     case 'Past sessions':
@@ -507,6 +706,12 @@ $('#create').click(function() {
     return;
   }
 
+  if (buyin < bb * 40) {
+    alert("You can't buy in for less than " + bb * 40);
+    $('#start-buyin').val(bb * 40);
+    return;
+  }
+
   if (buyin > balance) {
     alert("You don't have the available balance");
     $('#start-buyin').val(balance);
@@ -514,12 +719,13 @@ $('#create').click(function() {
   }
 
   var data = {
-    player: username,
-    bb: $('#start-buyin').attr('data-bb'),
-    buyin: $('#start-buyin').val()
+    player: $('#dash-user h5').text().trim(),
+    bb: bb,
+    buyin: buyin
   };
+
   $('#dash-balance h5').text(balance - buyin);
-  $('#user-status p').text(' Welcome, ' + username + '! Balance: ' + (balance - buyin));
+  $('#user-status p').text(' Welcome, ' + $('#dash-user h5').text().trim() + '! Balance: ' + (balance - buyin));
   socket.emit('create table', data);
 });
 //Receiving created table from the server
@@ -527,7 +733,7 @@ socket.on('my table', function(data) {
   switch(data.status) {
     case 'create':
       $('#table-name').text(data.name);
-      var info = 'Blinds: ' + Number(data.bb) / 2 + ' / ' + data.bb + ' -  Stack: ' + data.stack;
+      var info = 'Blinds: ' + (data.bb / 2) + ' / ' + data.bb + ' -  Stack: ' + data.stack;
       $('#table-info').text(info);
       $('#create-card').addClass('hide');
       $('#remove-card').removeClass('hide');
@@ -543,17 +749,18 @@ $('#remove').click(function() {
   var data = {
     table: $('#table-name').text()
   }
-  var stack = $('#table-info').text().split(' ');
-  var balance = Number($('#dash-balance h5').text()) + Number(stack[stack.length - 1]);
-  $('#dash-balance h5').text(balance);
-  $('#user-status p').text(' Welcome, ' + username + '! Balance: ' + balance);
+  var str = $('#table-info').text().split(' ');
+  var stack = Number(str[str.length - 1]);
+  var balance = Number($('#dash-balance h5').text().trim()) + stack;
+  $('#dash-balance h5').text(balance + ' ');
+  $('#user-status p').text(' Welcome, ' + $('#dash-user h5').text().trim() + '! Balance: ' + balance);
   socket.emit('remove table', data);
 });
 //Populating existing tables
 socket.on('post tables', function(data) {
   $('#game-grid div').remove();
   for (key in data) {
-    if (data[key].first.player != $('#dash-user').text().trim()) {
+    if (data[key].first.player != $('#dash-user').text().trim() && $('#table').attr('data-table') === "") {
       var col = document.createElement('div');
       var card = document.createElement('div');
       var nameContent = document.createElement('div');
@@ -590,12 +797,7 @@ socket.on('post tables', function(data) {
       var idValue = key + '-val';
       $(input).attr({type: 'number', 'data-bb': data[key].bb, id: idValue}).appendTo(inputBox);
       $(btnContent).addClass('extra content').appendTo(card);
-      switch(data[key].status) {
-        case 'waiting':
-          var text = 'Join table';
-          $(btn).addClass('ui fluid button').text(text).attr('id',key).appendTo(btnContent);
-          break;
-      }
+      $(btn).addClass('ui fluid button').text('Join table').attr('id',key).appendTo(btnContent);
     }
   }
 });
@@ -620,327 +822,19 @@ $('#game-grid').click(function(event) {
     var payload = {
       table: event.target.id,
       player: $('#dash-user').text().trim(),
-      buyin: $(valueSelector).val()
+      buyin: Number($(valueSelector).val())
     }
+    $('#table').attr('data-table', event.target.id);
     var balance = Number($('#dash-balance h5').text().trim()) - payload.buyin;
     $('#dash-balance h5').text(balance + ' ');
-    $('#user-status p').text(' Welcome, ' + username + '! Balance: ' + balance);
+    $('#user-status p').text(' Welcome, ' + $('#dash-user h5').text().trim() + '! Balance: ' + balance);
     socket.emit('join table', payload);
+    $('#create-card').addClass('hide');
+    $('#active-game').removeClass('hide');
+    $('#game-grid div').remove();
+    $('#player-menu a:nth-child(3)').removeClass('active');
+    $('#player-menu a:nth-child(4)').addClass('active');
   }
-});
-//Starting game socket emitter
-var promise = new Promise(function(resolve, reject) {
-  var xhr = new XMLHttpRequest();
-
-  xhr.open('GET', '/username');
-  xhr.send();
-
-  xhr.onload = function() {
-    resolve(xhr.responseText);
-  }
-});
-promise.then(function(value) {
-  username = value;
-  socket.on(username, function(data) {
-    console.log(data);
-    switch(data.action) {
-      case 'setup':
-        $('#table').removeClass('hide');
-        $('#table').attr('data-bb', data.bb);
-        $('#table').attr('data-table', data.table);
-        $('#table').attr('data-deck', data.deck);
-        $('#player p:first').text(username);
-        $('#player p:last').text(data.stack);
-        $('#player img').attr('src', $('#dash-avatar img').attr('src'));
-        $('#opponent p:first').text(data.opp.name);
-        $('#opponent p:last').text(data.opp.stack);
-        $('#opponent img').attr('src', data.avatar);
-        $('#table-session').text('Table: ' + data.table + ' - Blinds: ' + (Number(data.bb) / 2) + ' / ' + data.bb + " - No Limit Hold'em - Hand: " + data.hand);
-        if (data.dealer) {
-          $('#up').text('Post SB').removeClass('hide');
-          $('#dealer').css('left', '180px');
-        }
-        else {
-          $('#up').text('Post BB').removeClass('hide');
-          $('#dealer').css('left', '700px');
-        }
-        socket.on(data.table, function(data) {
-          var item = document.createElement('li');
-          if (data.message.split(' ')[0] === 'Dealer:') {
-            $(item).addClass('dealer-post');
-          }
-          $(item).addClass('post').text(data.message).appendTo('#messages');
-          $('#chatArea').scrollTop($('#messages').height());
-        });
-        break;
-      case 'update opp':
-        $('#pot h5').text(data.pot);
-        $('#opponent p:last').text(data.stack);
-        $('#opp-bet').text(data.bet);
-        break;
-      case 'deal':
-        if (data.dealer) {
-          $('#opp-card1').removeClass('hide');
-          $('#opp-card2').removeClass('hide');
-          $('#player-card1').removeClass('hide');
-          $('#player-card2').removeClass('hide');
-          $('#opp-card1').animate({
-            top: '200px',
-            left: '730px'
-          }, 'slow', function() {
-            $('#player-card1').animate({
-              top: '200px',
-              left: '30px'
-            }, 'slow', function() {
-              var card = '/images/cards/' + data.hand[0] + '.png';
-              $('#player-card1').attr('src', card);
-              $('#opp-card2').animate({
-                top: '200px',
-                left: '800px'
-              }, 'slow', function() {
-                $('#player-card2').animate({
-                  top: '200px',
-                  left: '100px'
-                }, 'slow', function() {
-                  var card = '/images/cards/' + data.hand[1] + '.png';
-                  $('#player-card2').attr('src', card);
-                  $('#down').removeClass('hide');
-                  $('#even').text('Call ' + (data.bb / 2)).removeClass('hide');
-                  $('#up').text('Raise to ' + (data.bb * 2)).removeClass('hide');
-                  $('#bet-selector').removeClass('hide');
-                })
-              })
-            })
-          })
-        }
-        else {
-          $('#opp-card1').removeClass('hide');
-          $('#opp-card2').removeClass('hide');
-          $('#player-card1').removeClass('hide');
-          $('#player-card2').removeClass('hide');
-          $('#player-card1').animate({
-            top: '200px',
-            left: '30px'
-          }, 'slow', function() {
-            var card = '/images/cards/' + data.hand[0] + '.png';
-            $('#player-card1').attr('src', card);
-            $('#opp-card1').animate({
-              top: '200px',
-              left: '730px'
-            }, 'slow', function() {
-              $('#player-card2').animate({
-                top: '200px',
-                left: '100px'
-              }, 'slow', function() {
-                var card = '/images/cards/' + data.hand[1] + '.png';
-                $('#player-card2').attr('src', card);
-                $('#opp-card2').animate({
-                  top: '200px',
-                  left: '800px'
-                }, 'slow')
-              })
-            })
-          })
-        }
-        break;
-      case 'opp fold':
-        $('#player p:last').text(data.stack);
-        $('#pot h5').text(data.pot);
-        $('#player-bet').text('0');
-        $('#opp-bet').text('0');
-        var deck = $('#table').attr('data-deck');
-        $('#com-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-        $('#com-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-        $('#com-card3').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-        $('#com-card4').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-        $('#com-card5').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-        $('#player-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-        $('#player-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-        $('#opp-card1').css({top: '20px', left: '405px'}).addClass('hide');
-        $('#opp-card2').css({top: '20px', left: '405px'}).addClass('hide');
-        var dealer = $('#dealer').css('left');
-        if (dealer === '180px') {
-          $('#dealer').animate({
-            left: '700px'
-          }, 'slow');
-        }
-        else {
-          $('#dealer').animate({
-            left: '180px'
-          }, 'slow');
-        }
-        break;
-      case 'call pre':
-        $('#pot h5').text(data.pot);
-        $('#opponent p:last').text(data.stack);
-        $('#opp-bet').text(data.bb);
-        $('#down').removeClass('hide');
-        $('#even').text('Check').removeClass('hide');
-        $('#up').text('Raise to ' + (2 * data.bb)).removeClass('hide');
-        $('#bet-selector').removeClass('hide');
-        break;
-      case 'raised':
-        $('#pot h5').text(data.pot);
-        $('#opponent p:last').text(data.stack);
-        $('#opp-bet').text(data.raise);
-        $('#down').removeClass('hide');
-        var call = data.raise - Number($('#player-bet').text());
-        $('#even').text('Call ' + call).removeClass('hide');
-        var raise = data.raise + data.bb;
-        $('#up').text('Raise to ' + raise).removeClass('hide');
-        $('#bet-selector').removeClass('hide');
-        break;
-      case 'deal flop':
-        $('#player-bet').text('0');
-        $('#opp-bet').text('0');
-        $('#even').attr('data-check','open');
-        $('#com-card1').removeClass('hide');
-        $('#com-card2').removeClass('hide');
-        $('#com-card3').removeClass('hide');
-        $('#com-card1').animate({
-          top: '185px',
-          left: '265px'
-        }, 'slow', function() {
-          $('#com-card2').animate({
-            top: '185px',
-            left: '335px'
-          }, 'slow', function() {
-            $('#com-card3').animate({
-              top: '185px',
-              left: '405px'
-            }, 'slow', function() {
-              var card1 = 'images/cards/' + data.cards[0] + '.png';
-              $('#com-card1').attr('src', card1);
-              var card2 = 'images/cards/' + data.cards[1] + '.png';
-              $('#com-card2').attr('src', card2);
-              var card3 = 'images/cards/' + data.cards[2] + '.png';
-              $('#com-card3').attr('src', card3);
-              if (!data.dealer) {
-                $('#down').removeClass('hide');
-                $('#even').text('Check').removeClass('hide');
-                $('#up').text('Bet ' + data.bb).removeClass('hide');
-                $('#bet-selector').removeClass('hide');
-              }
-            })
-          })
-        });
-        break;
-      case 'open bet':
-        $('#pot h5').text(data.pot);
-        $('#opponent p:last').text(data.stack);
-        $('#opp-bet').text(data.bet);
-        $('#down').removeClass('hide');
-        $('#even').text('Call ' + data.bet).removeClass('hide');
-        $('#up').text('Raise to ' + (data.bet + data.bb)).removeClass('hide');
-        $('#bet-selector').removeClass('hide');
-        break;
-      case 'checked':
-        $('#down').removeClass('hide');
-        $('#even').attr('data-check','close').text('Check').removeClass('hide');
-        $('#up').text('Bet ' + data.bb).removeClass('hide');
-        $('#bet-selector').removeClass('hide');
-        break;
-      case 'deal turn':
-        $('#player-bet').text('0');
-        $('#opp-bet').text('0');
-        $('#even').attr('data-check','open');
-        $('#com-card4').removeClass('hide');
-        $('#com-card4').animate({
-          top: '185px',
-          left: '475px'
-        }, 'slow', function() {
-          var card = 'images/cards/' + data.cards[3] + '.png';
-          $('#com-card4').attr('src', card);
-          if (!data.dealer) {
-            $('#down').removeClass('hide');
-            $('#even').text('Check').removeClass('hide');
-            $('#up').text('Bet ' + data.bb).removeClass('hide');
-            $('#bet-selector').removeClass('hide');
-          }
-        })
-        break;
-      case 'deal river':
-        $('#player-bet').text('0');
-        $('#opp-bet').text('0');
-        $('#even').attr('data-check','open');
-        $('#com-card5').removeClass('hide');
-        $('#com-card5').animate({
-          top: '185px',
-          left: '545px'
-        }, 'slow', function() {
-          var card = 'images/cards/' + data.cards[4] + '.png';
-          $('#com-card5').attr('src', card);
-          if (!data.dealer) {
-            $('#down').removeClass('hide');
-            $('#even').text('Check').removeClass('hide');
-            $('#up').text('Bet ' + data.bb).removeClass('hide');
-            $('#bet-selector').removeClass('hide');
-          }
-        })
-        break;
-      case 'new hand':
-        $('#opp-card1').attr('src','images/cards/' + data.hand[0] + '.png');
-        $('#opp-card2').attr('src','images/cards/' + data.hand[1] + '.png');
-        $('#player p:last').text(data.stack);
-        $('#opponent p:last').text(data.oppstack);
-        $('#pot h5').text('0');
-        $('#player-bet').text('0');
-        $('#opp-bet').text('0');
-        $('#even').attr('data-check','close');
-        setTimeout(function() {
-          deck = $('#table').attr('data-deck');
-          $('#player-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-          $('#player-card2').css({top: '20px', left: '400px'}).attr('src',deck).addClass('hide');
-          $('#opp-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-          $('#opp-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-          $('#com-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-          $('#com-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-          $('#com-card3').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-          $('#com-card4').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-          $('#com-card5').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
-          var message = $('#table-session').text().split(' ');
-          message[message.length - 1] = Number(message[message.length - 1]) + 1;
-          $('#table-session').text(message.join(' '));
-          if (data.dealer) {
-            $('#dealer').animate({
-              left: '180px'
-            }, 'slow');
-            if ($('#auto-blind input').attr('checked')) {
-              setTimeout(function() {
-                $('#up').text('Post SB').click();
-              }, 456);
-
-            }
-            else {
-              $('#up').text('Post SB').removeClass('hide');
-            }
-          }
-          else {
-            $('#dealer').animate({
-              left: '700px'
-            }, 'slow');
-            if ($('#auto-blind input').attr('checked')) {
-              setTimeout(function() {
-                $('#up').text('Post BB').click();
-              }, 666);
-            }
-            else {
-              $('#up').text('Post BB').removeClass('hide');
-            }
-          }
-        },5000);
-        break;
-      case 'player left':
-        var player = $('#opponent p:first').text();
-        alert(player + ' has left the table!');
-        $('#table').addClass('hide');
-        var balance = Number($('#dash-balance h5').text()) + data.stack;
-        $('#dash-balance h5').text(balance + ' ');
-        $('#user-status p').text(' Welcome ' + username + '! Balance: ' + balance);
-        clearTable();
-        break;
-    }
-  });
 });
 //Event listeners for the action buttons
 $('#up').click(function(event) {
@@ -952,7 +846,7 @@ $('#up').click(function(event) {
       var bb = $('#table').attr('data-bb');
       var payload = {
         table: $('#table').attr('data-table'),
-        player: username,
+        player: $('#dash-user h5').text().trim(),
         action: 'post blind'
       }
       if (array[1] === 'BB') {
@@ -968,6 +862,7 @@ $('#up').click(function(event) {
       $('#player p:last').text(stack);
       payload.stack = stack;
       $('#player-bet').text(payload.amount);
+      payload.bet = payload.amount;
       socket.emit('play', payload);
       break;
     case 'Raise':
@@ -982,12 +877,13 @@ $('#up').click(function(event) {
       $('#pot h5').text(pot);
       var payload = {
         table: $('#table').attr('data-table'),
-        player: username,
+        player: $('#dash-user h5').text().trim(),
         action: 'raise',
         pot: pot,
         stack: stack,
         raise: raise
       }
+      payload.bet = raise;
       socket.emit('play', payload);
       break;
     case 'Bet':
@@ -1002,11 +898,12 @@ $('#up').click(function(event) {
       var payload = {
         table: $('#table').attr('data-table'),
         action: 'bet',
-        player: username,
+        player: $('#dash-user h5').text().trim(),
         pot: pot,
         amount: bet,
         stack: stack
       }
+      payload.bet = bet;
       socket.emit('play', payload);
       break;
   }
@@ -1029,11 +926,12 @@ $('#even').click(function() {
     $('#player p:last').text(stack);
     var payload = {
       table: $('#table').attr('data-table'),
-      player: username,
+      player: $('#dash-user h5').text().trim(),
       stack: stack,
       pot: pot,
       amount: totalBet,
-      call: bet
+      call: bet,
+      bet: totalBet
     }
     if (Number(array[1]) === bb / 2) {
       payload.action = 'open call';
@@ -1047,7 +945,8 @@ $('#even').click(function() {
     var pot = Number($('#pot h5').text());
     var payload = {
       table: $('#table').attr('data-table'),
-      player: username
+      player: $('#dash-user h5').text().trim(),
+      bet: 0
     }
     if ($('#even').attr('data-check') === 'close') {
       payload.action = 'closing check';
@@ -1062,7 +961,7 @@ $('#even').click(function() {
 $('#down').click(function() {
   var payload = {
     table: $('#table').attr('data-table'),
-    player: username,
+    player: $('#dash-user h5').text().trim(),
     action: 'fold'
   }
   var oppStack = $('#opponent p:last').text();
@@ -1163,7 +1062,7 @@ $('#chat-input').submit(function(event) {
   var message = $('#chat-field').val();
   var payload = {
     table: $('#table').attr('data-table'),
-    player: username,
+    player: $('#dash-user h5').text().trim(),
     message: message
   }
   socket.emit('chat', payload);
@@ -1173,15 +1072,10 @@ $('#chat-input').submit(function(event) {
 $('#leave').click(function() {
   var payload = {
     table: $('#table').attr('data-table'),
-    player: username,
-    action: 'leave',
-    pot: Number($('#pot h5').text()),
-    stack: Number($('#player p:last').text())
+    player: $('#dash-user h5').text().trim(),
+    action: 'leave'
   }
-  var balance = Number($('#dash-balance h5').text());
-  $('#dash-balance h5').text(payload.stack + balance);
-  $('#user-status p').text(' Welcome, ' + username + '! Balance: ' + (payload.stack + balance));
-  $('#table').addClass('hide');
+  $('#table').attr('data-table',"");
   socket.emit('play', payload);
   clearTable();
 })
@@ -1323,7 +1217,7 @@ $('#avatar-select').click(function(event) {
     $('#user-status img').attr('src', avatar);
     $('#avatar-select').modal('hide');
 
-    var path = '/update/' + username;
+    var path = '/update/' + $('#dash-user h5').text().trim();
     var payload = JSON.stringify({
       avatar: avatar
     });
@@ -1344,7 +1238,7 @@ $('#deck-select').click(function(event) {
   if ($(event.target).attr('src')) {
     var deck = $(event.target).attr('src');
     $('#table').attr('data-deck', deck);
-    var path = '/update/' + username;
+    var path = '/update/' + $('#dash-user h5').text().trim();
     var payload = JSON.stringify({
       deck: deck
     });

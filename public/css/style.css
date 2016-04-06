@@ -391,3 +391,7 @@
 #deck-select img {
   height: 300px;
 }
+
+#dash-avatar img {
+  width: 25px;
+}

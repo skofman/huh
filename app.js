@@ -48,7 +48,7 @@ function User(pwd) {
   this.firstname = "";
   this.lastname = "";
   this.pwd = pwd;
-  this.bankroll = 500;
+  this.balance = 500;
   this.session = "";
   this.location = "";
   this.sessions = [];
@@ -57,7 +57,8 @@ function User(pwd) {
 }
 //Table constructor
 function Table(player, bb) {
-  this.status = 'waiting',
+  this.status = 'waiting';
+  this.stage = '';
   this.first = {
     player: player,
     dealer: true,
@@ -78,7 +79,6 @@ function Table(player, bb) {
     }
   },
   this.bb = bb;
-  this.action = "";
   this.pot = 0;
   this.deck = [true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true];
   this.community = [];
@@ -349,17 +349,29 @@ app.get('/check', function(req, res) {
   for (key in users) {
     if (users[key].session == req.cookies.session) {
       var payload = {
-        name: key,
-        balance: users[key].bankroll,
-        first: users[key].firstname,
-        last: users[key].lastname,
-        loc: users[key].location,
-        tables: tables,
+        username: key,
         avatar: users[key].avatar,
-        deck: users[key].deck
+        balance: users[key].balance,
+        firstname: users[key].firstname,
+        lastname: users[key].lastname,
+        location: users[key].location,
+        deck: users[key].deck,
+        table: {
+          status: 'not found'
+        }
       }
+      for (item in tables) {
+        if (tables[item].first.player == key || tables[item].second.player == key) {
+          payload.table.status = tables[item].status;
+          payload.table.name = item;
+          payload.table.bb = tables[item].bb;
+          payload.table.stack = tables[item].first.stack;
+        }
+      }
+      io.emit('post tables', tables);
     }
   }
+  io.emit('post tables', tables);
   if (payload) {
     res.status(200).send(payload);
   }
@@ -374,17 +386,7 @@ app.post('/login', jsonParser, function(req, res) {
       users[req.body.username].session = Math.floor(Math.random() * 1000000);
       updateFile('users');
       res.cookie("session", users[req.body.username].session);
-      var payload = {
-        name: req.body.username,
-        balance: users[req.body.username].bankroll,
-        first: users[req.body.username].firstname,
-        last: users[req.body.username].lastname,
-        loc: users[req.body.username].location,
-        tables: tables,
-        avatar: users[req.body.username].avatar,
-        deck: users[req.body.username].deck
-      };
-      res.status(200).json(payload);
+      res.sendStatus(200);
     }
     else {
       res.status(401).send('Wrong password');
@@ -397,12 +399,10 @@ app.post('/login', jsonParser, function(req, res) {
 //signup route
 app.post('/signup', jsonParser, function(req, res) {
   users[req.body.username] = new User(req.body.pwd);
+  users[req.body.username].session = Math.floor(Math.random() * 1000000);
   updateFile('users');
-  var payload = {
-    name: req.body.username,
-    pwd: req.body.pwd
-  };
-  res.status(200).send(payload);
+  res.cookie("session", users[req.body.username].session);
+  res.sendStatus(200);
 });
 //logout route
 app.get('/logout', function(req, res) {
@@ -456,7 +456,7 @@ io.on('connection', function(socket) {
   });
   socket.on('remove table', function(data) {
     var user = tables[data.table].first.player;
-    users[user].bankroll += Number(tables[data.table].first.stack);
+    users[user].balance += Number(tables[data.table].first.stack);
     updateFile('users');
     delete tables[data.table];
     updateFile('tables');
@@ -465,42 +465,44 @@ io.on('connection', function(socket) {
   });
   socket.on('join table', function(data) {
     var table = tables[data.table];
+    users[data.player].balance -= data.buyin;
     table.start = Date.now();
     table.second.player = data.player;
     table.second.stack = data.buyin;
     table.second.startStack = data.buyin;
     table.status = 'ready';
-    table.action = 'setup';
     var first = {
       action: 'setup',
+      username: table.first.player,
       table: data.table,
-      status: table.status,
       dealer: table.first.dealer,
       bb: table.bb,
       stack: table.first.stack,
       opp: {
         name: table.second.player,
-        stack: table.second.stack
+        stack: table.second.stack,
+        avatar: users[table.second.player].avatar
       },
       hand: table.hand,
-      avatar: users[table.second.player].avatar,
       deck: users[table.first.player].deck
     }
     var second = {
       action: 'setup',
+      username: table.second.player,
       table: data.table,
-      status: table.status,
       dealer: table.second.dealer,
       bb: table.bb,
       stack: table.second.stack,
       opp: {
         name: table.first.player,
-        stack: table.first.stack
+        stack: table.first.stack,
+        avatar: users[table.first.player].avatar,
       },
       hand: table.hand,
-      avatar: users[table.first.player].avatar,
       deck: users[table.second.player].deck
     }
+    updateFile('tables');
+    io.emit('post tables', tables);
     io.emit(table.first.player, first);
     io.emit(table.second.player, second);
     var post = {
@@ -512,6 +514,12 @@ io.on('connection', function(socket) {
   socket.on('play', function(data) {
     console.log(data);
     var table = tables[data.table];
+    if (table.first.player == data.player) {
+      table.first.bet = data.bet;
+    }
+    else {
+      table.second.bet = data.bet;
+    }
     switch(data.action) {
       case 'post blind':
         var bb = Number(table.bb);
@@ -747,37 +755,46 @@ io.on('connection', function(socket) {
         }
         break;
       case 'leave':
-        var update = {
-          action: 'player left',
+        console.log(tables);
+        var first = {
+          action: 'player left'
+        }
+        var second = {
+          action: 'player left'
         }
         if (data.player == table.first.player) {
-          table.second.stack += data.pot;
-          update.stack = table.second.stack;
-          io.emit(table.second.player, update);
+          table.second.stack += table.pot;
+          second.opponent = data.player;
+          first.opponent = false;
         }
         else {
-          table.first.stack += data.pot;
-          update.stack = table.first.stack;
-          io.emit(table.first.player, update)
+          table.first.stack += table.pot;
+          first.opponent = data.player;
+          second.opponent = false;
         }
         users[table.first.player].bankroll += table.first.stack;
+        first.balance = users[table.first.player].bankroll;
         users[table.second.player].bankroll += table.second.stack;
-        delete tables[data.table];
-        io.emit('my table', {status: 'remove'});
+        second.balance = users[table.second.player].bankroll;
+        io.emit(table.first.player, first);
+        io.emit(table.second.player, second);
         users[table.first.player].sessions.push({
           opp: table.second.player,
-          hands: table.hand - 1,
+          hands: table.hand,
           outcome: table.first.stack - table.first.startStack,
           start: table.start,
           end: Date.now()
         })
         users[table.second.player].sessions.push({
           opp: table.first.player,
-          hands: table.hand - 1,
+          hands: table.hand,
           outcome: table.second.stack - table.second.startStack,
           start: table.start,
           end: Date.now()
         })
+        delete tables[data.table];
+        io.emit('my table', {status: 'remove'});
+        io.emit('post tables', tables);
         updateFile('tables');
         updateFile('users');
         break;
@@ -785,6 +802,7 @@ io.on('connection', function(socket) {
   });
   socket.on('chat', function(data) {
     var message = data.player + ': ' + data.message;
+    tables[data.table].chat.push(message);
     var update = {
       message: message
     }
@@ -1232,6 +1250,7 @@ app.get('/leaders', function(req, res) {
   res.send(JSON.stringify(update));
 });
 //Server listener
-server.listen(8080, function() {
-  console.log('Listening on port 8080');
+var port = process.env.PORT || 1337;
+server.listen(port, function() {
+  console.log('Listening on port ' + port);
 });
