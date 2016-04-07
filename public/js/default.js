@@ -907,7 +907,7 @@ socket.on('post tables', function(data) {
       var btnContent = document.createElement('div');
       var btn = document.createElement('button');
 
-      $(col).addClass('four wide column').appendTo('#game-grid');
+      $(col).addClass('column').appendTo('#game-grid');
       $(card).addClass('ui card').appendTo(col);
       $(nameContent).addClass('content').appendTo(card);
       var idName = key + '-name';
