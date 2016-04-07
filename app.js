@@ -563,6 +563,7 @@ io.on('connection', function(socket) {
   });
   //Main play socket
   socket.on('play', function(data) {
+    console.log(data);
     var table = tables[data.table];
     if (table.first.player == data.player) {
       table.first.bet = data.bet;
@@ -732,6 +733,9 @@ io.on('connection', function(socket) {
           io.emit(data.table, post);
           table.first.stack = data.stack;
           io.emit(table.second.player, update);
+          if (data.stack === 0) {
+            table.second.stack = data.oppstack;
+          }
         }
         else {
           var post = {
@@ -740,6 +744,9 @@ io.on('connection', function(socket) {
           io.emit(data.table, post);
           table.second.stack = data.stack;
           io.emit(table.first.player, update);
+          if (data.stack === 0) {
+            table.first.stack = data.oppstack;
+          }
         }
         moveStage(table);
         break;
@@ -863,44 +870,255 @@ io.on('connection', function(socket) {
         var tableName = tableNames[i];
       }
     }
+    var allin = false;
+    if (table.first.stack === 0 || table.second.stack === 0) {
+      allin = true;
+    }
     switch(table.stage) {
       case 'pre':
-        table.stage = 'flop';
-        var post = {
-          message: 'Dealer: Dealing flop!'
+        if (allin) {
+          table.stage = 'flop';
+          table.deal();
+          table.stage = 'turn';
+          table.deal();
+          table.stage = 'river';
+          table.deal();
+          if (table.first.stack === 0) {
+            var post = {
+              message: 'Dealer: ' + table.first.player + ' is all in!'
+            }
+          }
+          else {
+            var post = {
+              message: 'Dealer: ' + table.second.player + ' is all in!'
+            }
+          }
+          io.emit(tableName, post);
+          var update = {
+            action: 'deal rest',
+            stage: 'pre',
+            cards: table.community
+          }
+          io.emit(table.first.player, update);
+          io.emit(table.second.player, update);
+          setTimeout(function() {
+            table.stage = 'showdown';
+            table.evaluateHand(table.first);
+            table.evaluateHand(table.second);
+            var winner = determineWinner(table);
+            if (winner === 'tie') {
+              var post = {
+                message: 'Dealer: Tie hand. Chop the pot!'
+              }
+              io.emit(tableName, post);
+              table.first.stack += table.pot / 2;
+              table.second.stack += table.pot / 2;
+            }
+            else {
+              winner.stack += table.pot;
+            }
+            table.pot = 0;
+            table.first.dealer = !table.first.dealer;
+            table.second.dealer = !table.second.dealer;
+            table.hand++;
+            var first = {
+              action: 'new hand',
+              hand: table.second.hand,
+              stack: table.first.stack,
+              oppstack: table.second.stack,
+              dealer: table.first.dealer,
+              number: table.hand,
+              bb: Number(table.bb)
+            }
+            var second = {
+              action: 'new hand',
+              hand: table.first.hand,
+              stack: table.second.stack,
+              oppstack: table.first.stack,
+              dealer: table.second.dealer,
+              number: table.hand,
+              bb: Number(table.bb)
+            }
+            io.emit(table.first.player, first);
+            io.emit(table.second.player, second);
+            table.newHand();
+          }, 5000);
+          return;
         }
-        io.emit(tableName, post);
-        var first = {
-          action: 'deal flop'
-        }
-        var second = {
-          action: 'deal flop'
+        else {
+          table.stage = 'flop';
+          var post = {
+            message: 'Dealer: Dealing flop!'
+          }
+          io.emit(tableName, post);
+          var first = {
+            action: 'deal flop'
+          }
+          var second = {
+            action: 'deal flop'
+          }
         }
         break;
       case 'flop':
-        table.stage = 'turn';
-        var post = {
-          message: 'Dealer: Dealing turn!'
+        if (allin) {
+          table.stage = 'turn';
+          table.deal();
+          table.stage = 'river';
+          table.deal();
+          if (table.first.stack === 0) {
+            var post = {
+              message: 'Dealer: ' + table.first.player + ' is all in!'
+            }
+          }
+          else {
+            var post = {
+              message: 'Dealer: ' + table.second.player + ' is all in!'
+            }
+          }
+          io.emit(tableName, post);
+          var update = {
+            action: 'deal rest',
+            stage: 'flop',
+            cards: table.community
+          }
+          io.emit(table.first.player, update);
+          io.emit(table.second.player, update);
+          setTimeout(function() {
+            table.stage = 'showdown';
+            table.evaluateHand(table.first);
+            table.evaluateHand(table.second);
+            var winner = determineWinner(table);
+            if (winner === 'tie') {
+              var post = {
+                message: 'Dealer: Tie hand. Chop the pot!'
+              }
+              io.emit(tableName, post);
+              table.first.stack += table.pot / 2;
+              table.second.stack += table.pot / 2;
+            }
+            else {
+              winner.stack += table.pot;
+            }
+            table.pot = 0;
+            table.first.dealer = !table.first.dealer;
+            table.second.dealer = !table.second.dealer;
+            table.hand++;
+            var first = {
+              action: 'new hand',
+              hand: table.second.hand,
+              stack: table.first.stack,
+              oppstack: table.second.stack,
+              dealer: table.first.dealer,
+              number: table.hand,
+              bb: Number(table.bb)
+            }
+            var second = {
+              action: 'new hand',
+              hand: table.first.hand,
+              stack: table.second.stack,
+              oppstack: table.first.stack,
+              dealer: table.second.dealer,
+              number: table.hand,
+              bb: Number(table.bb)
+            }
+            io.emit(table.first.player, first);
+            io.emit(table.second.player, second);
+            table.newHand();
+          }, 3000);
+          return;
         }
-        io.emit(tableName, post);
-        var first = {
-          action: 'deal turn'
-        }
-        var second = {
-          action: 'deal turn'
+        else {
+          table.stage = 'turn';
+          var post = {
+            message: 'Dealer: Dealing turn!'
+          }
+          io.emit(tableName, post);
+          var first = {
+            action: 'deal turn'
+          }
+          var second = {
+            action: 'deal turn'
+          }
         }
         break;
       case 'turn':
-        table.stage = 'river';
-        var post = {
-          message: 'Dealer: Dealing river!'
+        if (allin) {
+          table.stage = 'river';
+          table.deal();
+          if (table.first.stack === 0) {
+            var post = {
+              message: 'Dealer: ' + table.first.player + ' is all in!'
+            }
+          }
+          else {
+            var post = {
+              message: 'Dealer:' + table.second.player + ' is all in!'
+            }
+          }
+          io.emit(tableName, post);
+          var update = {
+            action: 'deal rest',
+            stage: 'turn',
+            cards: table.community
+          }
+          io.emit(table.first.player, update);
+          io.emit(table.second.player, update);
+          setTimeout(function() {
+            table.stage = 'showdown';
+            table.evaluateHand(table.first);
+            table.evaluateHand(table.second);
+            var winner = determineWinner(table);
+            if (winner === 'tie') {
+              var post = {
+                message: 'Dealer: Tie hand. Chop the pot!'
+              }
+              io.emit(tableName, post);
+              table.first.stack += table.pot / 2;
+              table.second.stack += table.pot / 2;
+            }
+            else {
+              winner.stack += table.pot;
+            }
+            table.pot = 0;
+            table.first.dealer = !table.first.dealer;
+            table.second.dealer = !table.second.dealer;
+            table.hand++;
+            var first = {
+              action: 'new hand',
+              hand: table.second.hand,
+              stack: table.first.stack,
+              oppstack: table.second.stack,
+              dealer: table.first.dealer,
+              number: table.hand,
+              bb: Number(table.bb)
+            }
+            var second = {
+              action: 'new hand',
+              hand: table.first.hand,
+              stack: table.second.stack,
+              oppstack: table.first.stack,
+              dealer: table.second.dealer,
+              number: table.hand,
+              bb: Number(table.bb)
+            }
+            io.emit(table.first.player, first);
+            io.emit(table.second.player, second);
+            table.newHand();
+          }, 2000);
+          return;
         }
-        io.emit(tableName, post);
-        var first = {
-          action: 'deal river'
-        }
-        var second = {
-          action: 'deal river'
+        else {
+          table.stage = 'river';
+          var post = {
+            message: 'Dealer: Dealing river!'
+          }
+          io.emit(tableName, post);
+          var first = {
+            action: 'deal river'
+          }
+          var second = {
+            action: 'deal river'
+          }
         }
         break;
       case 'river':

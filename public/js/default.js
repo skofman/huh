@@ -1,4 +1,4 @@
-var socket = io.connect('http://localhost:8080');
+var socket = io.connect();
 
 $('#show-login').click(function() {
   $('#login-form').removeClass('hide');
@@ -45,6 +45,7 @@ function showState() {
     if (xhr.status === 200) {
       //Login successfull
       var data = JSON.parse(xhr.response);
+      console.log(data);
       //Leaving an existing table
       if (data.table.status === 'ready') {
         var payload = {
@@ -128,6 +129,13 @@ function showState() {
             $('#pot h5').text(data.pot);
             $('#opponent p:last').text(data.stack);
             $('#opp-bet').text(data.bet);
+            if (data.stack === 0) {
+              var pstack = Number($('#player p:last').text());
+              var pbet = Number($('#player-bet').text());
+              pstack += (pbet - data.bet);
+              $('#player p:last').text(pstack);
+              $('#player-bet').text(data.bet);
+            }
             break;
           case 'deal':
             if (data.dealer) {
@@ -235,10 +243,15 @@ function showState() {
             $('#opponent p:last').text(data.stack);
             $('#opp-bet').text(data.raise);
             $('#down').removeClass('hide');
-            var call = data.raise - Number($('#player-bet').text());
-            $('#even').text('Call ' + call).removeClass('hide');
             var raise = data.raise + data.bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
+            var call = data.raise - Number($('#player-bet').text());
+            var max = Number($('#player p:last').text());
+            if (call > max) {
+              call = max;
+              $('#up').addClass('hide');
+            }
+            $('#even').text('Call ' + call).removeClass('hide');
             $('#bet-selector').removeClass('hide');
             break;
           case 'deal flop':
@@ -281,8 +294,14 @@ function showState() {
             $('#opponent p:last').text(data.stack);
             $('#opp-bet').text(data.bet);
             $('#down').removeClass('hide');
-            $('#even').text('Call ' + data.bet).removeClass('hide');
             $('#up').text('Raise to ' + (data.bet + data.bb)).removeClass('hide');
+            var call = data.bet;
+            var max = Number($('#player p:last').text());
+            if (call > max) {
+              call = max;
+              $('#up').addClass('hide');
+            }
+            $('#even').text('Call ' + call).removeClass('hide');
             $('#bet-selector').removeClass('hide');
             break;
           case 'checked':
@@ -392,6 +411,85 @@ function showState() {
             clearTable();
             $('#table').attr('data-table', '');
             $('#create-card').removeClass('hide');
+            break;
+          case 'deal rest':
+            $('#player-bet').text('0');
+            $('#opp-bet').text('0');
+            $('#even').attr('data-check','open');
+            switch(data.stage) {
+              case 'pre':
+                $('#com-card1').removeClass('hide');
+                $('#com-card2').removeClass('hide');
+                $('#com-card3').removeClass('hide');
+                $('#com-card4').removeClass('hide');
+                $('#com-card5').removeClass('hide');
+                $('#com-card1').animate({
+                  top: '185px',
+                  left: '265px'
+                }, 'slow', function() {
+                  $('#com-card2').animate({
+                    top: '185px',
+                    left: '335px'
+                  }, 'slow', function() {
+                    $('#com-card3').animate({
+                      top: '185px',
+                      left: '405px'
+                    }, 'slow', function() {
+                      var card1 = 'images/cards/' + data.cards[0] + '.png';
+                      $('#com-card1').attr('src', card1);
+                      var card2 = 'images/cards/' + data.cards[1] + '.png';
+                      $('#com-card2').attr('src', card2);
+                      var card3 = 'images/cards/' + data.cards[2] + '.png';
+                      $('#com-card3').attr('src', card3);
+                      $('#com-card4').animate({
+                        top: '185px',
+                        left: '475px'
+                      }, 'slow', function() {
+                        var card4 = 'images/cards/' + data.cards[3] + '.png';
+                        $('#com-card4').attr('src', card4);
+                        $('#com-card5').animate({
+                          top: '185px',
+                          left: '545px'
+                        }, 'slow', function() {
+                          var card5 = 'images/cards/' + data.cards[4] + '.png';
+                          $('#com-card5').attr('src', card5);
+                        })
+                      })
+                    })
+                  })
+                });
+                break;
+              case 'flop':
+                $('#com-card4').removeClass('hide');
+                $('#com-card5').removeClass('hide');
+                $('#com-card4').animate({
+                  top: '185px',
+                  left: '475px'
+                }, 'slow', function() {
+                  var card4 = 'images/cards/' + data.cards[3] + '.png';
+                  $('#com-card4').attr('src', card4);
+                  $('#com-card5').animate({
+                    top: '185px',
+                    left: '545px'
+                  }, 'slow', function() {
+                    var card5 = 'images/cards/' + data.cards[4] + '.png';
+                    $('#com-card5').attr('src', card5);
+                  })
+                });
+                break;
+              case 'turn':
+                $('#com-card5').removeClass('hide');
+                $('#com-card5').animate({
+                  top: '185px',
+                  left: '545px'
+                }, 'slow', function() {
+                  var card4 = 'images/cards/' + data.cards[3] + '.png';
+                  $('#com-card4').attr('src', card4);
+                  var card5 = 'images/cards/' + data.cards[4] + '.png';
+                  $('#com-card5').attr('src', card5);
+                });
+                break;
+            }
             break;
         }
       });
@@ -599,7 +697,7 @@ $('#input-loc').keypress(function(event) {
 $('#reset-bal').click(function() {
   var path = '/update/' + $('#dash-user h5').text().trim();
   var payload = JSON.stringify({
-    bankroll: 500
+    balance: 500
   });
 
   var xhr = new XMLHttpRequest();
@@ -851,7 +949,7 @@ $('#up').click(function(event) {
   $('#bet-selector').addClass('hide');
   switch(array[0]) {
     case 'Post':
-      var bb = $('#table').attr('data-bb');
+      var bb = Number($('#table').attr('data-bb'));
       var payload = {
         table: $('#table').attr('data-table'),
         player: $('#dash-user h5').text().trim(),
@@ -939,7 +1037,17 @@ $('#even').click(function() {
       pot: pot,
       amount: totalBet,
       call: bet,
-      bet: totalBet
+      bet: totalBet,
+    }
+    if (stack === 0) {
+      var oppbet = Number($('#opp-bet').text());
+      var oppstack = Number($('#opponent p:last').text());
+      oppstack += (oppbet - totalBet);
+      pot -= (oppbet - totalBet);
+      $('#opponent p:last').text(oppstack);
+      $('#pot h5').text(pot);
+      payload.oppstack = oppstack;
+      payload.pot = pot;
     }
     if (Number(array[1]) === bb / 2) {
       payload.action = 'open call';
