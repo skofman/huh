@@ -395,3 +395,7 @@
 #dash-avatar img {
   width: 25px;
 }
+
+#alert {
+  text-align: center;
+}

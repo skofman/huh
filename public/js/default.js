@@ -383,7 +383,8 @@ function showState() {
             break;
           case 'player left':
             if (data.opponent) {
-              alert(data.opponent + ' has left the table!');
+              $('#alert h3').text(data.opponent + ' has left the table!');
+              $('#alert').modal('show');
             }
             $('#dash-balance h5').text(data.balance + " ");
             $('#user-status p').text(' Welcome ' + $('#dash-user h5').text().trim() + '! Balance: ' + data.balance);
@@ -596,26 +597,24 @@ $('#input-loc').keypress(function(event) {
 });
 //Event for balance reset
 $('#reset-bal').click(function() {
-  if (confirm('Are you sure?')) {
-    var path = '/update/' + $('#dash-user h5').text().trim();
-    var payload = JSON.stringify({
-      bankroll: 500
-    });
+  var path = '/update/' + $('#dash-user h5').text().trim();
+  var payload = JSON.stringify({
+    bankroll: 500
+  });
 
-    var xhr = new XMLHttpRequest();
+  var xhr = new XMLHttpRequest();
 
-    xhr.open('POST', path);
-    xhr.setRequestHeader('Content-type', 'application/json');
-    xhr.send(payload);
+  xhr.open('POST', path);
+  xhr.setRequestHeader('Content-type', 'application/json');
+  xhr.send(payload);
 
-    xhr.onload = function() {
-      if (xhr.status === 200) {
-        var message = $('#user-status p').text();
-        var oldBalance = $('#dash-balance h5').text().trim();
-        var updateMsg = message.replace(oldBalance, '500');
-        $('#user-status p').text(updateMsg);
-        $('#dash-balance h5').text('500 ');
-      }
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      var message = $('#user-status p').text();
+      var oldBalance = $('#dash-balance h5').text().trim();
+      var updateMsg = message.replace(oldBalance, '500');
+      $('#user-status p').text(updateMsg);
+      $('#dash-balance h5').text('500 ');
     }
   }
 });
@@ -700,19 +699,22 @@ $('#create').click(function() {
   var buyin = Number($('#start-buyin').val());
   var balance = Number($('#dash-balance h5').text().trim());
   if (buyin > bb * 150) {
-    alert("You can't buy in for more than " + bb * 150);
+    $('#alert h3').text("You can't buy in for more than " + bb * 150);
+    $('#alert').modal('show');
     $('#start-buyin').val(bb * 150);
     return;
   }
 
   if (buyin < bb * 40) {
-    alert("You can't buy in for less than " + bb * 40);
+    $('#alert h3').text("You can't buy in for less than " + bb * 40);
+    $('#alert').modal('show');
     $('#start-buyin').val(bb * 40);
     return;
   }
 
   if (buyin > balance) {
-    alert("You don't have the available balance");
+    $('#alert h3').text("You don't have the available balance");
+    $('#alert').modal('show');
     $('#start-buyin').val(balance);
     return;
   }
@@ -807,15 +809,18 @@ $('#game-grid').click(function(event) {
     var valueSelector = '#' + event.target.id + '-val';
     var bb = Number($(valueSelector).attr('data-bb'));
     if ($(valueSelector).val() < 40 * bb) {
-      alert('Minimum buy-in is ' + 40 * bb);
+      $('#alert h3').text('Minimum buy-in is ' + 40 * bb);
+      $('#alert').modal('show');
       return;
     }
     else if ($(valueSelector).val() > 150 * bb) {
-      alert('Maximum buy-in is ' + 150 * bb);
+      $('#alert h3').text('Maximum buy-in is ' + 150 * bb);
+      $('#alert').modal('show');
       return;
     }
     else if ($(valueSelector).val() > Number($('#dash-balance').text().trim())) {
-      alert("You don't have sufficient funds");
+      $('#alert h3').text("You don't have sufficient funds");
+      $('#alert').modal('show');
       return;
     }
     var payload = {
