@@ -1513,11 +1513,19 @@ app.get('/leaders', function(req, res) {
       update.winners.push({'user': key, 'total': total})
     }
     else {
-      update.losers.push({'user': key, 'total': total});
+      update.losers.push({'user': key, 'total': -total});
     }
   }
-  update.winners = _.sortBy(update.winners, ['user','total']).reverse();
-  update.losers = _.sortBy(update.losers, ['user', 'total']);
+  console.log(update.winners);
+  console.log(update.losers);
+  update.winners = _.sortBy(update.winners, function(obj) {
+    return Math.min(obj.total);
+  }).reverse();
+  update.losers = _.sortBy(update.losers, function(obj) {
+    return Math.min(obj.total);
+  }).reverse();
+  console.log(update.winners);
+  console.log(update.losers);
   res.send(JSON.stringify(update));
 });
 //Server listener

@@ -1368,7 +1368,7 @@ $('#leaderboard').click(function() {
       var item = document.createElement('li');
       $(item).text(obj.losers[j].user + ':').appendTo(loseList);
       var val = document.createElement('li');
-      $(val).text('(' + (-obj.losers[j].total) + ')').css('color','red').appendTo(loseValues);
+      $(val).text('(' + (obj.losers[j].total) + ')').css('color','red').appendTo(loseValues);
     }
   }
 
