@@ -396,6 +396,7 @@
   width: 25px;
 }
 
-#alert {
+#alert,
+#rebuy {
   text-align: center;
 }

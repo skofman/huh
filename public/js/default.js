@@ -45,7 +45,6 @@ function showState() {
     if (xhr.status === 200) {
       //Login successfull
       var data = JSON.parse(xhr.response);
-      console.log(data);
       //Leaving an existing table
       if (data.table.status === 'ready') {
         var payload = {
@@ -108,9 +107,16 @@ function showState() {
             if (data.dealer) {
               $('#up').text('Post SB').removeClass('hide');
               $('#dealer').css('left', '180px');
-              $('#player-menu a:nth-child(4)').css('background-color','#91A8D0');
+              $('#player-menu .active').removeClass('active');
+              $('#player-menu a:nth-child(4)').addClass('active');
               $('#remove-card').addClass('hide');
               $('#game-grid div').remove();
+              $('#active-game').removeClass('hide');
+              $('#new-table').addClass('hide');
+              $('#join-table').addClass('hide');
+              $('#info').addClass('hide');
+              $('#sessions').addClass('hide');
+              $('#create-card').addClass('hide');
             }
             else {
               $('#up').text('Post BB').removeClass('hide');
@@ -251,6 +257,9 @@ function showState() {
               call = max;
               $('#up').addClass('hide');
             }
+            if (data.stack === 0) {
+              $('#up').addClass('hide');
+            }
             $('#even').text('Call ' + call).removeClass('hide');
             $('#bet-selector').removeClass('hide');
             break;
@@ -299,6 +308,9 @@ function showState() {
             var max = Number($('#player p:last').text());
             if (call > max) {
               call = max;
+              $('#up').addClass('hide');
+            }
+            if (data.stack === 0) {
               $('#up').addClass('hide');
             }
             $('#even').text('Call ' + call).removeClass('hide');
@@ -357,6 +369,11 @@ function showState() {
             $('#player-bet').text('0');
             $('#opp-bet').text('0');
             $('#even').attr('data-check','close');
+            var stack = Number($('#player p:last').text());
+            var bb = Number($('#table').attr('data-bb'));
+            if (stack <= bb) {
+              $('#rebuy').modal('show');
+            }
             setTimeout(function() {
               deck = $('#table').attr('data-deck');
               $('#player-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
@@ -1365,4 +1382,42 @@ $('#deck-select').click(function(event) {
     xhr.send(payload);
     $('#deck-select').modal('hide');
   }
+});
+//Rebuy modal event listeners
+$('#rebuy .approve').click(function(event) {
+  var val = Number($('#rebuy input').val());
+  var bb = Number($('#table').attr('data-bb'));
+  var stack = Number($('#player p:last').text());
+  var balance = Number($('#dash-balance h5').text().trim());
+  if (val + stack < (40 * bb)) {
+    $('#rebuy h5').text("Your rebuy below table minimum of " + (40 * bb));
+    return false;
+  }
+  else if ((val + stack) > (150 * bb)) {
+    $('#rebuy h5').text("Your rebuy above table maximum of " + (150 * bb));
+    return false;
+  }
+  else if (balance < val) {
+    $('#rebuy h5').text("You don't have sufficient balance!");
+    return false;
+  }
+  var user = $('#dash-user h5').text().trim();
+  $('#dash-balance h5').text(balance - val);
+  $('#user-status').text('Welcome ' + user + '! Balance: ' + (balance - val));
+  stack += val;
+  var payload = {
+    table: $('#table').attr('data-table'),
+    player: user,
+    action: 'rebuy',
+    stack: stack,
+    balance: balance
+  }
+  $('#rebuy h5').text('');
+  $('#player p:last').text(stack);
+  socket.emit('play', payload);
+});
+
+$('#rebuy .cancel').click(function() {
+  $('#rebuy').modal('hide');
+  $("#leave").click();
 });

@@ -563,7 +563,6 @@ io.on('connection', function(socket) {
   });
   //Main play socket
   socket.on('play', function(data) {
-    console.log(data);
     var table = tables[data.table];
     if (table.first.player == data.player) {
       table.first.bet = data.bet;
@@ -852,6 +851,21 @@ io.on('connection', function(socket) {
         updateFile('tables');
         updateFile('users');
         io.emit('post tables', tables);
+        break;
+      case 'rebuy':
+        users[data.player].balance = data.balance;
+        var update = {
+          action: 'update opp',
+          stack: data.stack
+        }
+        if (data.player == table.first.player) {
+          table.first.stack = data.stack;
+          io.emit(table.second.player, update);
+        }
+        else {
+          table.second.stack = data.stack;
+          io.emit(table.first.player, update);
+        }
         break;
     }
   });
