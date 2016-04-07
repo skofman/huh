@@ -1,4 +1,4 @@
-var socket = io.connect('http://localhost:1337');
+var socket = io.connect('http://localhost:8080');
 
 $('#show-login').click(function() {
   $('#login-form').removeClass('hide');
@@ -45,9 +45,8 @@ function showState() {
     if (xhr.status === 200) {
       //Login successfull
       var data = JSON.parse(xhr.response);
-      console.log(data);
       //Leaving an existing table
-      if (data.table.status === 'active') {
+      if (data.table.status === 'ready') {
         var payload = {
           table: data.table.name,
           player: data.username,
@@ -92,10 +91,8 @@ function showState() {
       $('#signup-form').addClass('hide');
       $('#main').removeClass('hide');
       socket.on(data.username, function(data) {
-        console.log(data);
         switch(data.action) {
           case 'setup':
-            console.log(data);
             $('#table').removeClass('hide');
             $('#table').attr('data-bb', data.bb);
             $('#table').attr('data-table', data.table);
@@ -112,6 +109,7 @@ function showState() {
               $('#dealer').css('left', '180px');
               $('#player-menu a:nth-child(4)').css('background-color','#91A8D0');
               $('#remove-card').addClass('hide');
+              $('#game-grid div').remove();
             }
             else {
               $('#up').text('Post BB').removeClass('hide');
@@ -391,6 +389,8 @@ function showState() {
             $('#user-status p').text(' Welcome ' + $('#dash-user h5').text().trim() + '! Balance: ' + data.balance);
             $('#table').addClass('hide');
             clearTable();
+            $('#table').attr('data-table', '');
+            $('#create-card').removeClass('hide');
             break;
         }
       });
@@ -437,7 +437,6 @@ $('#logout').click(function() {
     $('#logout').addClass('hide');
     $('#user-status').addClass('hide');
     $('#main').addClass('hide');
-    $('#remove').click();
   }
 });
 //event listener for choosing a username
@@ -760,7 +759,7 @@ $('#remove').click(function() {
 socket.on('post tables', function(data) {
   $('#game-grid div').remove();
   for (key in data) {
-    if (data[key].first.player != $('#dash-user').text().trim() && $('#table').attr('data-table') === "") {
+    if (data[key].first.player != $('#dash-user').text().trim() && $('#table').attr('data-table') === "" && data[key].status === 'waiting') {
       var col = document.createElement('div');
       var card = document.createElement('div');
       var nameContent = document.createElement('div');
@@ -829,8 +828,12 @@ $('#game-grid').click(function(event) {
     $('#dash-balance h5').text(balance + ' ');
     $('#user-status p').text(' Welcome, ' + $('#dash-user h5').text().trim() + '! Balance: ' + balance);
     socket.emit('join table', payload);
-    $('#create-card').addClass('hide');
     $('#active-game').removeClass('hide');
+    $('#new-table').addClass('hide');
+    $('#join-table').addClass('hide');
+    $('#info').addClass('hide');
+    $('#sessions').addClass('hide');
+    $('#create-card').addClass('hide');
     $('#game-grid div').remove();
     $('#player-menu a:nth-child(3)').removeClass('active');
     $('#player-menu a:nth-child(4)').addClass('active');
@@ -1075,7 +1078,6 @@ $('#leave').click(function() {
     player: $('#dash-user h5').text().trim(),
     action: 'leave'
   }
-  $('#table').attr('data-table',"");
   socket.emit('play', payload);
   clearTable();
 })

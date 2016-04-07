@@ -406,6 +406,57 @@ app.post('/signup', jsonParser, function(req, res) {
 });
 //logout route
 app.get('/logout', function(req, res) {
+  for (key in users) {
+    if (users[key].session === req.cookies.session) {
+      var user = key;
+      break;
+    }
+  }
+  for (item in tables) {
+    if (tables[item].first.player == key || tables[item].second.player == key) {
+      var table = tables[item];
+      var first = {
+        action: 'player left'
+      }
+      var second = {
+        action: 'player left'
+      }
+      if (user == table.first.player) {
+        table.second.stack += table.pot;
+        second.opponent = user;
+        first.opponent = false;
+      }
+      else {
+        table.first.stack += table.pot;
+        first.opponent = user;
+        second.opponent = false;
+      }
+      users[table.first.player].balance += table.first.stack;
+      first.balance = users[table.first.player].balance;
+      users[table.second.player].balance += table.second.stack;
+      second.balance = users[table.second.player].balance;
+      io.emit(table.first.player, first);
+      io.emit(table.second.player, second);
+      users[table.first.player].sessions.push({
+        opp: table.second.player,
+        hands: table.hand,
+        outcome: table.first.stack - table.first.startStack,
+        start: table.start,
+        end: Date.now()
+      })
+      users[table.second.player].sessions.push({
+        opp: table.first.player,
+        hands: table.hand,
+        outcome: table.second.stack - table.second.startStack,
+        start: table.start,
+        end: Date.now()
+      })
+      delete tables[item];
+      updateFile('tables');
+      updateFile('users');
+      io.emit('post tables', tables);
+    }
+  }
   res.clearCookie('session');
   updateFile('users');
   res.send();
@@ -443,7 +494,7 @@ io.on('connection', function(socket) {
     tables[name].first.startStack = data.buyin;
     tables[name].first.stack = data.buyin;
     updateFile('tables');
-    users[data.player].bankroll -= data.buyin;
+    users[data.player].balance -= data.buyin;
     updateFile('users');
     var update = {
       name: name,
@@ -512,7 +563,6 @@ io.on('connection', function(socket) {
   });
   //Main play socket
   socket.on('play', function(data) {
-    console.log(data);
     var table = tables[data.table];
     if (table.first.player == data.player) {
       table.first.bet = data.bet;
@@ -522,7 +572,7 @@ io.on('connection', function(socket) {
     }
     switch(data.action) {
       case 'post blind':
-        var bb = Number(table.bb);
+        var bb = table.bb;
         table.pot = data.pot;
         var update = {
           action: 'update opp',
@@ -755,7 +805,6 @@ io.on('connection', function(socket) {
         }
         break;
       case 'leave':
-        console.log(tables);
         var first = {
           action: 'player left'
         }
@@ -772,10 +821,10 @@ io.on('connection', function(socket) {
           first.opponent = data.player;
           second.opponent = false;
         }
-        users[table.first.player].bankroll += table.first.stack;
-        first.balance = users[table.first.player].bankroll;
-        users[table.second.player].bankroll += table.second.stack;
-        second.balance = users[table.second.player].bankroll;
+        users[table.first.player].balance += table.first.stack;
+        first.balance = users[table.first.player].balance;
+        users[table.second.player].balance += table.second.stack;
+        second.balance = users[table.second.player].balance;
         io.emit(table.first.player, first);
         io.emit(table.second.player, second);
         users[table.first.player].sessions.push({
@@ -793,16 +842,14 @@ io.on('connection', function(socket) {
           end: Date.now()
         })
         delete tables[data.table];
-        io.emit('my table', {status: 'remove'});
-        io.emit('post tables', tables);
         updateFile('tables');
         updateFile('users');
+        io.emit('post tables', tables);
         break;
     }
   });
   socket.on('chat', function(data) {
     var message = data.player + ': ' + data.message;
-    tables[data.table].chat.push(message);
     var update = {
       message: message
     }
@@ -1210,14 +1257,6 @@ io.on('connection', function(socket) {
   }
 
 })
-//Route of getting the active user
-app.get('/username', function(req, res) {
-  for (name in users) {
-    if (users[name].session == req.cookies.session) {
-      res.send(name);
-    }
-  }
-});
 //Route of getting past sessions
 app.get('/sessions', function(req, res) {
   for (key in users) {
@@ -1250,7 +1289,7 @@ app.get('/leaders', function(req, res) {
   res.send(JSON.stringify(update));
 });
 //Server listener
-var port = process.env.PORT || 1337;
+var port = process.env.PORT || 8080;
 server.listen(port, function() {
   console.log('Listening on port ' + port);
 });
