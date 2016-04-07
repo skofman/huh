@@ -251,17 +251,21 @@ function showState() {
             $('#down').removeClass('hide');
             var raise = data.raise + data.bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             var call = data.raise - Number($('#player-bet').text());
             var max = Number($('#player p:last').text());
             if (call > max) {
               call = max;
               $('#up').addClass('hide');
+              $('#bet-selector').addClass('hide');
+              $('#bet-input').val('');
             }
             if (data.stack === 0) {
               $('#up').addClass('hide');
+              $('#bet-selector').addClass('hide');
+              $('#bet-input').val('');
             }
             $('#even').text('Call ' + call).removeClass('hide');
-            $('#bet-selector').removeClass('hide');
             break;
           case 'deal flop':
             $('#player-bet').text('0');
@@ -304,17 +308,25 @@ function showState() {
             $('#opp-bet').text(data.bet);
             $('#down').removeClass('hide');
             $('#up').text('Raise to ' + (data.bet + data.bb)).removeClass('hide');
+            $('#bet-selector').removeClass('hide');
             var call = data.bet;
             var max = Number($('#player p:last').text());
             if (call > max) {
               call = max;
               $('#up').addClass('hide');
+              $('#bet-selector').addClass('hide');
+              $('#bet-input').val('');
+            }
+            if (data.stack === 0) {
+              $('#up').addClass('hide');
+              $('#bet-selector').addClass('hide');
+              $('#bet-input').val('');
             }
             if (data.stack === 0) {
               $('#up').addClass('hide');
             }
             $('#even').text('Call ' + call).removeClass('hide');
-            $('#bet-selector').removeClass('hide');
+
             break;
           case 'checked':
             $('#down').removeClass('hide');
@@ -964,6 +976,7 @@ $('#up').click(function(event) {
   var array = event.target.textContent.split(' ');
   $('#up').addClass('hide');
   $('#bet-selector').addClass('hide');
+  $('#bet-input').val('');
   switch(array[0]) {
     case 'Post':
       var bb = Number($('#table').attr('data-bb'));
@@ -1036,6 +1049,7 @@ $('#even').click(function() {
   var array = event.target.textContent.split(' ');
   $('#up').addClass('hide');
   $('#bet-selector').addClass('hide');
+  $('#bet-input').val('');
   $('#down').addClass('hide');
   $('#even').addClass('hide');
   if (array[0] === 'Call') {
@@ -1105,6 +1119,7 @@ $('#down').click(function() {
   $('#opp-bet').text('0');
   $('#up').addClass('hide');
   $('#bet-selector').addClass('hide');
+  $('#bet-input').val('');
   $('#even').addClass('hide');
   $('#down').addClass('hide');
   var deck = $('#table').attr('data-deck');
@@ -1130,7 +1145,7 @@ $('#down').click(function() {
     }, 'slow');
   }
 });
-
+//Bet selectors
 $('#bet-plus').click(function() {
   var array = $('#up').text().split(' ');
   var bet = 0;
@@ -1188,6 +1203,31 @@ $('#bet-allin').click(function() {
     $('#up').text('Raise to ' + bet);
   }
 });
+
+$('#bet-input').keyup(function() {
+  var array = $('#up').text().split(' ');
+  var value = Number($('#bet-input').val());
+  //Max amount
+  var stack = Number($('#player p:last').text());
+  var bet = Number($('#player-bet').text());
+  var max = stack + bet;
+  //Min amount
+  var oppbet = Number($('#opp-bet').text());
+  var bb = Number($('#table').attr('data-bb'));
+  var min = oppbet + bb;
+
+  array.pop();
+  if (value >= min && value <= max) {
+    array.push(value);
+  }
+  else if (value > max) {
+    array.push(max);
+  }
+  else {
+    array.push(min);
+  }
+  $('#up').text(array.join(' '));
+});
 //Chat message sending to tables
 $('#chat-input').submit(function(event) {
   event.preventDefault();
@@ -1234,6 +1274,7 @@ function clearTable() {
   $('#even').addClass('hide');
   $('#down').addClass('hide');
   $('#bet-selector').addClass('hide');
+  $('#bet-input').val('');
   $('.post').remove();
 }
 //Auto blind checkbox event

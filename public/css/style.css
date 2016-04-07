@@ -282,8 +282,8 @@
 
 #bet-selector {
   position: absolute;
-  top: 520px;
-  left: 760px;
+  top: 550px;
+  left: 730px;
   z-index: 3 !important;
 }
 
@@ -399,4 +399,13 @@
 #alert,
 #rebuy {
   text-align: center;
+}
+
+#bet-input {
+  width: 30px;
+  height: 21.7812px;
+}
+
+#bet-selector button {
+  margin-right: 0;
 }
