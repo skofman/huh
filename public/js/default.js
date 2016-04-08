@@ -132,9 +132,8 @@ function showState() {
             });
             break;
           case 'update opp':
-            $('#pot h5').text(data.pot);
             $('#opponent p:last').text(data.stack);
-            $('#opp-bet').text(data.bet);
+            placeOppBet(data.bet);
             if (data.stack === 0) {
               var pstack = Number($('#player p:last').text());
               var pbet = Number($('#player-bet').text());
@@ -210,9 +209,29 @@ function showState() {
             break;
           case 'opp fold':
             $('#player p:last').text(data.stack);
-            $('#pot h5').text(data.pot);
-            $('#player-bet').text('0');
-            $('#opp-bet').text('0');
+            $('#pchips .chip').animate({
+              left: '417px'
+            }, 'slow', function() {
+              $('#pchips .chip').addClass('hide');
+              console.log('inhere');
+            });
+            $('#oppchips .chip').animate({
+              left: '417px'
+            }, 'slow', function() {
+              $('#oppchips .chip').addClass('hide');
+              placePot(data.pot);
+              $('#pot').addClass('hide');
+              $('#potchips .chip').animate({
+                left: '180px'
+              }, 'slow', function() {
+                $('#potchips .chip').addClass('hide');
+                $('#pot h5').text('0');
+                resetPlayerChips();
+                console.log('in');
+              });
+            });
+            $('#player-bet').text('0').addClass('hide');
+            $('#opp-bet').text('0').addClass('hide');
             var deck = $('#table').attr('data-deck');
             $('#com-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
             $('#com-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
@@ -236,7 +255,6 @@ function showState() {
             }
             break;
           case 'call pre':
-            $('#pot h5').text(data.pot);
             $('#opponent p:last').text(data.stack);
             $('#opp-bet').text(data.bb);
             $('#down').removeClass('hide');
@@ -245,7 +263,6 @@ function showState() {
             $('#bet-selector').removeClass('hide');
             break;
           case 'raised':
-            $('#pot h5').text(data.pot);
             $('#opponent p:last').text(data.stack);
             $('#opp-bet').text(data.raise);
             $('#down').removeClass('hide');
@@ -270,6 +287,7 @@ function showState() {
           case 'deal flop':
             $('#player-bet').text('0');
             $('#opp-bet').text('0');
+            $('#pot h5').text(data.pot);
             $('#even').attr('data-check','open');
             $('#com-card1').removeClass('hide');
             $('#com-card2').removeClass('hide');
@@ -303,7 +321,6 @@ function showState() {
             });
             break;
           case 'open bet':
-            $('#pot h5').text(data.pot);
             $('#opponent p:last').text(data.stack);
             $('#opp-bet').text(data.bet);
             $('#down').removeClass('hide');
@@ -337,6 +354,7 @@ function showState() {
           case 'deal turn':
             $('#player-bet').text('0');
             $('#opp-bet').text('0');
+            $('#pot h5').text(data.pot);
             $('#even').attr('data-check','open');
             $('#com-card4').removeClass('hide');
             $('#com-card4').animate({
@@ -356,6 +374,7 @@ function showState() {
           case 'deal river':
             $('#player-bet').text('0');
             $('#opp-bet').text('0');
+            $('#pot h5').text(data.pot);
             $('#even').attr('data-check','open');
             $('#com-card5').removeClass('hide');
             $('#com-card5').animate({
@@ -444,6 +463,7 @@ function showState() {
           case 'deal rest':
             $('#player-bet').text('0');
             $('#opp-bet').text('0');
+            $('#pot h5').text(data.pot);
             $('#even').attr('data-check','open');
             switch(data.stage) {
               case 'pre':
@@ -991,8 +1011,8 @@ $('#up').click(function(event) {
       else {
         payload.amount = Number(bb) / 2;
       }
-      var pot = Number($('#pot h5').text()) + payload.amount;
-      $('#pot h5').text(pot);
+      placePlayerBet(payload.amount);
+      var pot = Number($('#opp-bet').text()) + payload.amount;
       payload.pot = pot;
       var stack = Number($('#player p:last').text()) - payload.amount;
       $('#player p:last').text(stack);
@@ -1007,10 +1027,9 @@ $('#up').click(function(event) {
       var raise = Number(array[2]);
       var bet = Number($('#player-bet').text());
       var stack = Number($('#player p:last').text()) - raise + bet;
-      var pot = Number($('#pot h5').text()) + raise - bet;
       $('#player p:last').text(stack);
       $('#player-bet').text(raise);
-      $('#pot h5').text(pot);
+      var pot = Number($('#pot h5').text()) + Number($('#player-bet').text()) + Number($('#opp-bet').text());
       var payload = {
         table: $('#table').attr('data-table'),
         player: $('#dash-user h5').text().trim(),
@@ -1026,10 +1045,9 @@ $('#up').click(function(event) {
       $('#down').addClass('hide');
       $('#even').addClass('hide');
       var bet = Number(array[1]);
-      var pot = Number($('#pot h5').text()) + bet;
       var stack = Number($('#player p:last').text()) - bet;
       $('#player-bet').text(bet);
-      $('#pot h5').text(pot);
+      var pot = Number($('#pot h5').text()) + Number($('#player-bet').text()) + Number($('#opp-bet').text());
       $('#player p:last').text(stack);
       var payload = {
         table: $('#table').attr('data-table'),
@@ -1056,11 +1074,10 @@ $('#even').click(function() {
     var bb = Number($('#table').attr('data-bb'));
     var bet = Number(array[1]);
     var totalBet = Number($('#player-bet').text()) + bet;
-    var pot = Number($('#pot h5').text()) + bet;
     var stack = Number($('#player p:last').text()) - bet;
     $('#player-bet').text(totalBet);
-    $('#pot h5').text(pot);
     $('#player p:last').text(stack);
+    var pot = Number($('#pot h5').text()) + Number($('#opp-bet').text()) + Number($('#player-bet').text());
     var payload = {
       table: $('#table').attr('data-table'),
       player: $('#dash-user h5').text().trim(),
@@ -1076,7 +1093,6 @@ $('#even').click(function() {
       oppstack += (oppbet - totalBet);
       pot -= (oppbet - totalBet);
       $('#opponent p:last').text(oppstack);
-      $('#pot h5').text(pot);
       payload.oppstack = oppstack;
       payload.pot = pot;
     }
@@ -1111,12 +1127,30 @@ $('#down').click(function() {
     player: $('#dash-user h5').text().trim(),
     action: 'fold'
   }
-  var oppStack = $('#opponent p:last').text();
-  var pot = $('#pot h5').text();
-  $('#opponent p:last').text(Number(oppStack) + Number(pot));
-  $('#pot h5').text('0');
-  $('#player-bet').text('0');
-  $('#opp-bet').text('0');
+  var oppStack = Number($('#opponent p:last').text());
+  var pot = Number($('#pot h5').text()) + Number($('#player-bet').text()) + Number($('#opp-bet').text());
+  $('#opponent p:last').text(oppStack + pot);
+  $('#pchips').animate({
+    left: '417px'
+  }, 'slow', function() {
+    $('#pchips .chip').addClass('hide');
+  });
+  $('#oppchips').animate({
+    left: '417px'
+  }, 'slow', function() {
+    $('#oppchips .chip').addClass('hide');
+    placePot(pot);
+    $('#pot').addClass('hide');
+    $('#potchips').animate({
+      left: '675px'
+    }, 'slow', function() {
+      $('#potchips .chip').addClass('hide');
+      $('#pot h5').text('0');
+      $('#player-bet').text('0').addClass('hide');
+      $('#opp-bet').text('0').addClass('hide');
+      resetPlayerChips();
+    })
+  });
   $('#up').addClass('hide');
   $('#bet-selector').addClass('hide');
   $('#bet-input').val('');
@@ -1462,3 +1496,138 @@ $('#rebuy .cancel').click(function() {
   $('#rebuy').modal('hide');
   $("#leave").click();
 });
+//Function to calculate the chip denomination
+function calcChips(num) {
+  var array = [];
+
+  array.push(Math.floor(num / 500));
+  num = num % 500;
+
+  array.push(Math.floor(num / 100));
+  num = num % 100;
+
+  array.push(Math.floor(num / 25));
+  num = num % 25;
+
+  array.push(Math.floor(num / 5));
+  num = num % 5;
+
+  array.push(num);
+
+  return array;
+}
+//Function to return player chips to original positions
+function resetPlayerChips() {
+  var player = ['180px','180px','180px','180px','180px','203px','203px','203px','203px','203px','192px','192px','192px','192px','192px','226px','226px','226px','226px','226px','215px','215px','215px','215px','215px'];
+  var opp = ['675px','675px','675px','675px','675px','652px','652px','652px','652px','652px','663px','663px','663px','663px','663px','629px','629px','629px','629px','629px','640px','640px','640px','640px','640px'];
+
+  for (var i = 0; i < player.length; i++) {
+    var pselector = '#pchips .chip:nth-of-type(' + (i + 1) + ')';
+    $(pselector).css('left', player[i]);
+    var oppselector = '#oppchips .chip:nth-of-type(' + (i + 1) + ')';
+    $(oppselector).css('left', opp[i])
+  }
+}
+//Function for placing the pot
+function placePot(num) {
+  $('#potchips .chip').addClass('hide');
+  var chips = calcChips(num);
+  console.log(chips);
+  var count = 0;
+  for (var i = 0; i < chips.length; i++) {
+    for (var j = 0; j < chips[i]; j++) {
+      count++;
+      var selector = '#potchips .chip:nth-of-type(' + count + ')';
+      var image = 'images/chips/' + i + '.svg';
+      $(selector).attr('src', image).removeClass('hide');
+    }
+  }
+  console.log(count);
+
+  if (count <= 5) {
+    for (var i = 0; i < count; i++) {
+      var selector = '#potchips .chip:nth-of-type(' + (i + 1) + ')';
+      $(selector).css('left', '417px').removeClass('hide');
+    }
+  }
+  else if (count <= 15) {
+    for (var i = 0; i < count; i++) {
+      var selector = '#potchips .chip:nth-of-type(' + (i + 1) + ')';
+      if (i < 5) {
+        var place = '406px';
+      }
+      else if (i < 10) {
+        var place = '429px';
+      }
+      else {
+        var place = '418px';
+      }
+      $(selector).css('left', place).removeClass('hide');
+    }
+  }
+  else {
+    for (var i = 0; i < count; i++) {
+      var selector = '#potchips .chip:nth-of-type(' + (i + 1) + ')';
+      if (i < 5) {
+        var place = '394px';
+      }
+      else if (i < 10) {
+        var place = '417px';
+      }
+      else if (i < 15) {
+        var place = '406px';
+      }
+      else if (i < 20) {
+        var place = '440px';
+      }
+      else {
+        var place = '429px';
+      }
+      $(selector).css('left', place).removeClass('hide');
+    }
+  }
+  $('#pot h5').text(num);
+  $('#pot').removeClass('hide');
+  return;
+}
+//Function for placing opponent bet
+function placeOppBet(num) {
+  var chips = calcChips(num);
+  var count = 0;
+
+  for (var i = 0; i < chips.length; i++) {
+    for (var j = 0; j < chips[i]; j++) {
+      count++;
+      var selector = '#oppchips .chip:nth-of-type(' + count + ')';
+      var image = 'images/chips/' + i + '.svg';
+      $(selector).attr('src', image).removeClass('hide');
+    }
+  }
+
+  if (count > 15) {
+    var position = 625 - 8 * (num.toString().length - 1);
+    $('#opp-bet').text(num).css('left', position + 'px').removeClass('hide');
+  }
+  else if (count > 5) {
+    var position = 648 - 8 * (num.toString().length - 1);
+    $('#opp-bet').text(num).css('left', position + 'px').removeClass('hide');
+  }
+  else {
+    var position = 671 - 8 * (num.toString().length - 1);
+    $('#opp-bet').text(num).css('left', position + 'px').removeClass('hide');
+  }
+}
+//Function for placing player bet
+function placePlayerBet(num) {
+  var chips = calcChips(num);
+  var count = 0;
+  for (var i = 0; i < chips.length; i++) {
+    for (var j = 0; j < chips[i]; j++) {
+      count++;
+      var selector = '#pchips .chip:nth-of-type(' + count + ')';
+      var image = 'images/chips/' + i + '.svg';
+      $(selector).attr('src', image).removeClass('hide');
+    }
+  }
+  $('#player-bet').text(num).css('left', '219px').removeClass('hide');
+}

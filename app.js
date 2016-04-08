@@ -67,7 +67,8 @@ function Table(player, bb) {
       value: 0,
       type: [],
       kicker: []
-    }
+    },
+    posted: false
   },
   this.second = {
     dealer: false,
@@ -76,7 +77,8 @@ function Table(player, bb) {
       value: 0,
       type: [],
       kicker: []
-    }
+    },
+    posted: false
   },
   this.bb = bb;
   this.pot = 0;
@@ -570,6 +572,7 @@ io.on('connection', function(socket) {
     else {
       table.second.bet = data.bet;
     }
+    console.log(data.pot);
     switch(data.action) {
       case 'post blind':
         var bb = table.bb;
@@ -581,14 +584,18 @@ io.on('connection', function(socket) {
           bet: data.amount
         }
         if (data.player == table.first.player) {
+          table.first.posted = true;
           table.first.stack = data.stack;
           io.emit(table.second.player, update);
         }
         else {
+          table.second.posted = true;
           table.second.stack = data.stack;
           io.emit(table.first.player, update);
         }
-        if (data.pot === bb * (3 / 2)) {
+        if (table.first.posted && table.second.posted) {
+          table.first.posted = false;
+          table.second.posted = false;
           var post = {
             message: 'Dealer: Players posted binds. Dealing hand!'
           }
@@ -618,7 +625,6 @@ io.on('connection', function(socket) {
           }
           io.emit(data.table, post);
           table.second.stack += table.pot;
-          table.pot = 0;
           var update = {
             action: 'opp fold',
             stack: table.second.stack,
@@ -632,7 +638,6 @@ io.on('connection', function(socket) {
           }
           io.emit(data.table, post);
           table.first.stack += table.pot;
-          table.pot = 0;
           var update = {
             action: 'opp fold',
             stack: table.first.stack,
@@ -911,7 +916,8 @@ io.on('connection', function(socket) {
           var update = {
             action: 'deal rest',
             stage: 'pre',
-            cards: table.community
+            cards: table.community,
+            pot: table.pot
           }
           io.emit(table.first.player, update);
           io.emit(table.second.player, update);
@@ -966,10 +972,12 @@ io.on('connection', function(socket) {
           }
           io.emit(tableName, post);
           var first = {
-            action: 'deal flop'
+            action: 'deal flop',
+            pot: table.pot
           }
           var second = {
-            action: 'deal flop'
+            action: 'deal flop',
+            pot: table.pot
           }
         }
         break;
@@ -993,7 +1001,8 @@ io.on('connection', function(socket) {
           var update = {
             action: 'deal rest',
             stage: 'flop',
-            cards: table.community
+            cards: table.community,
+            pot: table.pot
           }
           io.emit(table.first.player, update);
           io.emit(table.second.player, update);
@@ -1048,10 +1057,12 @@ io.on('connection', function(socket) {
           }
           io.emit(tableName, post);
           var first = {
-            action: 'deal turn'
+            action: 'deal turn',
+            pot: table.pot
           }
           var second = {
-            action: 'deal turn'
+            action: 'deal turn',
+            pot: table.pot
           }
         }
         break;
@@ -1073,7 +1084,8 @@ io.on('connection', function(socket) {
           var update = {
             action: 'deal rest',
             stage: 'turn',
-            cards: table.community
+            cards: table.community,
+            pot: table.pot
           }
           io.emit(table.first.player, update);
           io.emit(table.second.player, update);
@@ -1104,7 +1116,8 @@ io.on('connection', function(socket) {
               oppstack: table.second.stack,
               dealer: table.first.dealer,
               number: table.hand,
-              bb: Number(table.bb)
+              bb: Number(table.bb),
+              pot: table.pot
             }
             var second = {
               action: 'new hand',
@@ -1113,7 +1126,8 @@ io.on('connection', function(socket) {
               oppstack: table.first.stack,
               dealer: table.second.dealer,
               number: table.hand,
-              bb: Number(table.bb)
+              bb: Number(table.bb),
+              pot: table.pot
             }
             io.emit(table.first.player, first);
             io.emit(table.second.player, second);
@@ -1128,10 +1142,12 @@ io.on('connection', function(socket) {
           }
           io.emit(tableName, post);
           var first = {
-            action: 'deal river'
+            action: 'deal river',
+            pot: table.pot
           }
           var second = {
-            action: 'deal river'
+            action: 'deal river',
+            pot: table.pot
           }
         }
         break;

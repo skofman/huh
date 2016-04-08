@@ -226,15 +226,10 @@
 
 #pot {
   position: absolute;
-  top: 280px;
-  left: 410px;
+  top: 330px;
+  left: 435px;
   color: white;
   z-index: 3 !important;
-  padding-left: 15px;
-  padding-right: 15px;
-  padding-bottom: 3px;
-  border: 2px solid black;
-  border-radius: 5px;
 }
 
 #pot h5 {
@@ -243,15 +238,9 @@
   text-align: center;
 }
 
-#pot h6 {
-  margin: 0;
-  padding: 0;
-  text-align: center;
-}
-
 #dealer {
   position: absolute;
-  top: 300px;
+  top: 250px;
   left: 180px;
   z-index: 3 !important;
   width: 20px;
@@ -260,23 +249,17 @@
 
 #player-bet {
   position: absolute;
-  top: 265px;
-  left: 200px;
+  top: 295px;
+  left: 219px;
   color: white;
-  padding: 5px 10px 5px 10px;
-  border: 2px solid black;
-  border-radius: 5px;
   z-index: 3 !important;
 }
 
 #opp-bet {
   position: absolute;
-  top: 265px;
-  left: 670px;
+  top: 295px;
+  left: 671px;
   color: white;
-  padding: 5px 10px 5px 10px;
-  border: 2px solid black;
-  border-radius: 5px;
   z-index: 3 !important;
 }
 
@@ -408,4 +391,395 @@
 
 #bet-selector button {
   margin-right: 0;
+}
+
+#pchips {
+  position: absolute;
+  left: 180px;
+  top: 280px;
+  width: 150;
+  height: 100px;
+  background-color: blue;
+  z-index: 6 !important;
+}
+
+.chip {
+  position: absolute;
+  z-index: 5 !important;
+  width: 40px;
+}
+
+#pchips .chip:nth-of-type(1) {
+  left: 180px;
+  top: 280px;
+}
+
+#pchips .chip:nth-of-type(2) {
+  left: 180px;
+  top: 275px;
+}
+
+#pchips .chip:nth-of-type(3) {
+  left: 180px;
+  top: 270px;
+}
+
+#pchips .chip:nth-of-type(4) {
+  left: 180px;
+  top: 265px;
+}
+
+#pchips .chip:nth-of-type(5) {
+  left: 180px;
+  top: 260px;
+}
+
+#pchips .chip:nth-of-type(6) {
+  left: 203px;
+  top: 280px;
+}
+
+#pchips .chip:nth-of-type(7) {
+  left: 203px;
+  top: 275px;
+}
+
+#pchips .chip:nth-of-type(8) {
+  left: 203px;
+  top: 270px;
+}
+
+#pchips .chip:nth-of-type(9) {
+  left: 203px;
+  top: 265px;
+}
+
+#pchips .chip:nth-of-type(10) {
+  left: 203px;
+  top: 260px;
+}
+
+#pchips .chip:nth-of-type(11) {
+  left: 192px;
+  top: 295px;
+}
+
+#pchips .chip:nth-of-type(12) {
+  left: 192px;
+  top: 290px;
+}
+
+#pchips .chip:nth-of-type(13) {
+  left: 192px;
+  top: 285px;
+}
+
+#pchips .chip:nth-of-type(14) {
+  left: 192px;
+  top: 280px;
+}
+
+#pchips .chip:nth-of-type(15) {
+  left: 192px;
+  top: 275px;
+}
+
+#pchips .chip:nth-of-type(16) {
+  left: 226px;
+  top: 280px;
+}
+
+#pchips .chip:nth-of-type(17) {
+  left: 226px;
+  top: 275px;
+}
+
+#pchips .chip:nth-of-type(18) {
+  left: 226px;
+  top: 270px;
+}
+
+#pchips .chip:nth-of-type(19) {
+  left: 226px;
+  top: 265px;
+}
+
+#pchips .chip:nth-of-type(20) {
+  left: 226px;
+  top: 260px;
+}
+
+#pchips .chip:nth-of-type(21) {
+  left: 215px;
+  top: 295px;
+}
+
+#pchips .chip:nth-of-type(22) {
+  left: 215px;
+  top: 290px;
+}
+
+#pchips .chip:nth-of-type(23) {
+  left: 215px;
+  top: 285px;
+}
+
+#pchips .chip:nth-of-type(24) {
+  left: 215px;
+  top: 280px;
+}
+
+#pchips .chip:nth-of-type(25) {
+  left: 215px;
+  top: 275px;
+}
+
+#oppchips .chip:nth-of-type(1) {
+  left: 675px;
+  top: 280px;
+}
+
+#oppchips .chip:nth-of-type(2) {
+  left: 675px;
+  top: 275px;
+}
+
+#oppchips .chip:nth-of-type(3) {
+  left: 675px;
+  top: 270px;
+}
+
+#oppchips .chip:nth-of-type(4) {
+  left: 675px;
+  top: 265px;
+}
+
+#oppchips .chip:nth-of-type(5) {
+  left: 675px;
+  top: 260px;
+}
+
+#oppchips .chip:nth-of-type(6) {
+  left: 652px;
+  top: 280px;
+}
+
+#oppchips .chip:nth-of-type(7) {
+  left: 652px;
+  top: 275px;
+}
+
+#oppchips .chip:nth-of-type(8) {
+  left: 652px;
+  top: 270px;
+}
+
+#oppchips .chip:nth-of-type(9) {
+  left: 652px;
+  top: 265px;
+}
+
+#oppchips .chip:nth-of-type(10) {
+  left: 652px;
+  top: 260px;
+}
+
+#oppchips .chip:nth-of-type(11) {
+  left: 663px;
+  top: 295px;
+}
+
+#oppchips .chip:nth-of-type(12) {
+  left: 663px;
+  top: 290px;
+}
+
+#oppchips .chip:nth-of-type(13) {
+  left: 663px;
+  top: 285px;
+}
+
+#oppchips .chip:nth-of-type(14) {
+  left: 663px;
+  top: 280px;
+}
+
+#oppchips .chip:nth-of-type(15) {
+  left: 663px;
+  top: 275px;
+}
+
+#oppchips .chip:nth-of-type(16) {
+  left: 629px;
+  top: 280px;
+}
+
+#oppchips .chip:nth-of-type(17) {
+  left: 629px;
+  top: 275px;
+}
+
+#oppchips .chip:nth-of-type(18) {
+  left: 629px;
+  top: 270px;
+}
+
+#oppchips .chip:nth-of-type(19) {
+  left: 629px;
+  top: 265px;
+}
+
+#oppchips .chip:nth-of-type(20) {
+  left: 629px;
+  top: 260px;
+}
+
+#oppchips .chip:nth-of-type(21) {
+  left: 640px;
+  top: 295px;
+}
+
+#oppchips .chip:nth-of-type(22) {
+  left: 640px;
+  top: 290px;
+}
+
+#oppchips .chip:nth-of-type(23) {
+  left: 640px;
+  top: 285px;
+}
+
+#oppchips .chip:nth-of-type(24) {
+  left: 640px;
+  top: 280px;
+}
+
+#oppchips .chip:nth-of-type(25) {
+  left: 640px;
+  top: 275px;
+}
+
+#potchips .chip:nth-of-type(1) {
+  left: 394px;
+  top: 280px;
+}
+
+#potchips .chip:nth-of-type(2) {
+  left: 394px;
+  top: 275px;
+}
+
+#potchips .chip:nth-of-type(3) {
+  left: 394px;
+  top: 270px;
+}
+
+#potchips .chip:nth-of-type(4) {
+  left: 394px;
+  top: 265px;
+}
+
+#potchips .chip:nth-of-type(5) {
+  left: 394px;
+  top: 260px;
+}
+
+#potchips .chip:nth-of-type(6) {
+  left: 417px;
+  top: 280px;
+}
+
+#potchips .chip:nth-of-type(7) {
+  left: 417px;
+  top: 275px;
+}
+
+#potchips .chip:nth-of-type(8) {
+  left: 417px;
+  top: 270px;
+}
+
+#potchips .chip:nth-of-type(9) {
+  left: 417px;
+  top: 265px;
+}
+
+#potchips .chip:nth-of-type(10) {
+  left: 417px;
+  top: 260px;
+}
+
+#potchips .chip:nth-of-type(11) {
+  left: 406px;
+  top: 295px;
+}
+
+#potchips .chip:nth-of-type(12) {
+  left: 406px;
+  top: 290px;
+}
+
+#potchips .chip:nth-of-type(13) {
+  left: 406px;
+  top: 285px;
+}
+
+#potchips .chip:nth-of-type(14) {
+  left: 406px;
+  top: 280px;
+}
+
+#potchips .chip:nth-of-type(15) {
+  left: 406px;
+  top: 275px;
+}
+
+#potchips .chip:nth-of-type(16) {
+  left: 440px;
+  top: 280px;
+}
+
+#potchips .chip:nth-of-type(17) {
+  left: 440px;
+  top: 275px;
+}
+
+#potchips .chip:nth-of-type(18) {
+  left: 440px;
+  top: 270px;
+}
+
+#potchips .chip:nth-of-type(19) {
+  left: 440px;
+  top: 265px;
+}
+
+#potchips .chip:nth-of-type(20) {
+  left: 440px;
+  top: 260px;
+}
+
+#potchips .chip:nth-of-type(21) {
+  left: 429px;
+  top: 295px;
+}
+
+#potchips .chip:nth-of-type(22) {
+  left: 429px;
+  top: 290px;
+}
+
+#potchips .chip:nth-of-type(23) {
+  left: 429px;
+  top: 285px;
+}
+
+#potchips .chip:nth-of-type(24) {
+  left: 429px;
+  top: 280px;
+}
+
+#potchips .chip:nth-of-type(25) {
+  left: 429px;
+  top: 275px;
 }
