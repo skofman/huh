@@ -393,14 +393,13 @@
   margin-right: 0;
 }
 
-#pchips {
+#pchips,
+#oppchips,
+#potchips {
   position: absolute;
-  left: 180px;
-  top: 280px;
-  width: 150;
-  height: 100px;
-  background-color: blue;
-  z-index: 6 !important;
+  left: 0;
+  top: 0;
+  z-index: 3 !important;
 }
 
 .chip {

@@ -620,6 +620,7 @@ io.on('connection', function(socket) {
         break;
       case 'fold':
         if (table.first.player == data.player) {
+          var winner = table.second.player;
           var post = {
             message: 'Dealer: ' + table.first.player + ' folded. ' + table.second.player + ' wins ' + table.pot + '.'
           }
@@ -633,6 +634,7 @@ io.on('connection', function(socket) {
           io.emit(table.second.player, update);
         }
         else {
+          var winner = table.first.player;
           var post = {
             message: 'Dealer: ' + table.second.player + ' folded. ' + table.first.player + ' wins ' + table.pot + '.'
           }
@@ -656,7 +658,8 @@ io.on('connection', function(socket) {
           oppstack: table.second.stack,
           dealer: table.first.dealer,
           number: table.hand,
-          bb: Number(table.bb)
+          bb: Number(table.bb),
+          winner: false
         }
         var second = {
           action: 'new hand',
@@ -665,7 +668,8 @@ io.on('connection', function(socket) {
           oppstack: table.first.stack,
           dealer: table.second.dealer,
           number: table.hand,
-          bb: Number(table.bb)
+          bb: Number(table.bb),
+          winner: false
         }
         io.emit(table.first.player, first);
         io.emit(table.second.player, second);
@@ -933,6 +937,9 @@ io.on('connection', function(socket) {
               io.emit(tableName, post);
               table.first.stack += table.pot / 2;
               table.second.stack += table.pot / 2;
+              winner = {
+                player: 'tie'
+              }
             }
             else {
               winner.stack += table.pot;
@@ -948,7 +955,8 @@ io.on('connection', function(socket) {
               oppstack: table.second.stack,
               dealer: table.first.dealer,
               number: table.hand,
-              bb: Number(table.bb)
+              bb: Number(table.bb),
+              winner: winner.player
             }
             var second = {
               action: 'new hand',
@@ -957,7 +965,8 @@ io.on('connection', function(socket) {
               oppstack: table.first.stack,
               dealer: table.second.dealer,
               number: table.hand,
-              bb: Number(table.bb)
+              bb: Number(table.bb),
+              winner: winner.player
             }
             io.emit(table.first.player, first);
             io.emit(table.second.player, second);
@@ -1018,6 +1027,9 @@ io.on('connection', function(socket) {
               io.emit(tableName, post);
               table.first.stack += table.pot / 2;
               table.second.stack += table.pot / 2;
+              winner = {
+                player: 'tie'
+              }
             }
             else {
               winner.stack += table.pot;
@@ -1033,7 +1045,8 @@ io.on('connection', function(socket) {
               oppstack: table.second.stack,
               dealer: table.first.dealer,
               number: table.hand,
-              bb: Number(table.bb)
+              bb: Number(table.bb),
+              winner: winner.player
             }
             var second = {
               action: 'new hand',
@@ -1042,7 +1055,8 @@ io.on('connection', function(socket) {
               oppstack: table.first.stack,
               dealer: table.second.dealer,
               number: table.hand,
-              bb: Number(table.bb)
+              bb: Number(table.bb),
+              winner: winner.player
             }
             io.emit(table.first.player, first);
             io.emit(table.second.player, second);
@@ -1101,6 +1115,9 @@ io.on('connection', function(socket) {
               io.emit(tableName, post);
               table.first.stack += table.pot / 2;
               table.second.stack += table.pot / 2;
+              winner = {
+                player: 'tie'
+              }
             }
             else {
               winner.stack += table.pot;
@@ -1117,7 +1134,8 @@ io.on('connection', function(socket) {
               dealer: table.first.dealer,
               number: table.hand,
               bb: Number(table.bb),
-              pot: table.pot
+              pot: table.pot,
+              winner: winner.player
             }
             var second = {
               action: 'new hand',
@@ -1127,7 +1145,8 @@ io.on('connection', function(socket) {
               dealer: table.second.dealer,
               number: table.hand,
               bb: Number(table.bb),
-              pot: table.pot
+              pot: table.pot,
+              winner: winner.player
             }
             io.emit(table.first.player, first);
             io.emit(table.second.player, second);
@@ -1163,32 +1182,42 @@ io.on('connection', function(socket) {
           io.emit(tableName, post);
           table.first.stack += table.pot / 2;
           table.second.stack += table.pot / 2;
+          winner = {
+            player: 'tie'
+          }
         }
         else {
           winner.stack += table.pot;
         }
-        table.pot = 0;
+
         table.first.dealer = !table.first.dealer;
         table.second.dealer = !table.second.dealer;
         table.hand++;
         var first = {
           action: 'new hand',
+          stage: 'showdown',
           hand: table.second.hand,
           stack: table.first.stack,
           oppstack: table.second.stack,
           dealer: table.first.dealer,
           number: table.hand,
-          bb: Number(table.bb)
+          bb: Number(table.bb),
+          winner: winner.player,
+          pot: table.pot
         }
         var second = {
           action: 'new hand',
+          stage: 'showdown',
           hand: table.first.hand,
           stack: table.second.stack,
           oppstack: table.first.stack,
           dealer: table.second.dealer,
           number: table.hand,
-          bb: Number(table.bb)
+          bb: Number(table.bb),
+          winner: winner.player,
+          pot: table.pot
         }
+        table.pot = 0;
         io.emit(table.first.player, first);
         io.emit(table.second.player, second);
         table.newHand();

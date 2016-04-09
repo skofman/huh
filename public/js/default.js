@@ -209,29 +209,28 @@ function showState() {
             break;
           case 'opp fold':
             $('#player p:last').text(data.stack);
-            $('#pchips .chip').animate({
-              left: '417px'
-            }, 'slow', function() {
-              $('#pchips .chip').addClass('hide');
-              console.log('inhere');
-            });
-            $('#oppchips .chip').animate({
-              left: '417px'
-            }, 'slow', function() {
-              $('#oppchips .chip').addClass('hide');
-              placePot(data.pot);
-              $('#pot').addClass('hide');
-              $('#potchips .chip').animate({
-                left: '180px'
-              }, 'slow', function() {
-                $('#potchips .chip').addClass('hide');
-                $('#pot h5').text('0');
-                resetPlayerChips();
-                console.log('in');
-              });
-            });
             $('#player-bet').text('0').addClass('hide');
             $('#opp-bet').text('0').addClass('hide');
+            $('#pchips').animate({
+              left: '247px'
+            }, 1000, function() {
+              $('#pchips .chip').addClass('hide');
+              $('#pchips').css('left', '0px');
+            })
+            $('#oppchips').animate({
+              left: '-247px'
+            }, 1000, function() {
+              $('#oppchips .chip').addClass('hide');
+              $('#oppchips').css('left', '0px');
+              placePot(data.pot);
+              $('#pot h5').text('0').addClass('hide');
+              $('#potchips').animate({
+                left: '-300px'
+              }, 1000, function() {
+                $('#potchips .chip').addClass('hide');
+                $('#potchips').css('left', 0);
+              })
+            })
             var deck = $('#table').attr('data-deck');
             $('#com-card1').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
             $('#com-card2').css({top: '20px', left: '405px'}).attr('src',deck).addClass('hide');
@@ -256,7 +255,7 @@ function showState() {
             break;
           case 'call pre':
             $('#opponent p:last').text(data.stack);
-            $('#opp-bet').text(data.bb);
+            placeOppBet(data.bb);
             $('#down').removeClass('hide');
             $('#even').text('Check').removeClass('hide');
             $('#up').text('Raise to ' + (2 * data.bb)).removeClass('hide');
@@ -264,7 +263,7 @@ function showState() {
             break;
           case 'raised':
             $('#opponent p:last').text(data.stack);
-            $('#opp-bet').text(data.raise);
+            placeOppBet(data.raise);
             $('#down').removeClass('hide');
             var raise = data.raise + data.bb;
             $('#up').text('Raise to ' + raise).removeClass('hide');
@@ -285,44 +284,56 @@ function showState() {
             $('#even').text('Call ' + call).removeClass('hide');
             break;
           case 'deal flop':
-            $('#player-bet').text('0');
-            $('#opp-bet').text('0');
-            $('#pot h5').text(data.pot);
+            $('#player-bet').text('0').addClass('hide');
+            $('#opp-bet').text('0').addClass('hide');
             $('#even').attr('data-check','open');
-            $('#com-card1').removeClass('hide');
-            $('#com-card2').removeClass('hide');
-            $('#com-card3').removeClass('hide');
-            $('#com-card1').animate({
-              top: '185px',
-              left: '265px'
-            }, 'slow', function() {
-              $('#com-card2').animate({
+            $('#pchips').animate({
+              left: '247px'
+            }, 1000, function() {
+              $('#pchips .chip').addClass('hide');
+              $('#pchips').css('left', '0px');
+            });
+            $('#oppchips').animate({
+              left: '-247px'
+            }, 1000, function() {
+              $('#oppchips .chip').addClass('hide');
+              $('#oppchips').css('left', '0px');
+              placePot(data.pot);
+              $('#com-card1').removeClass('hide');
+              $('#com-card2').removeClass('hide');
+              $('#com-card3').removeClass('hide');
+              $('#com-card1').animate({
                 top: '185px',
-                left: '335px'
+                left: '265px'
               }, 'slow', function() {
-                $('#com-card3').animate({
+                $('#com-card2').animate({
                   top: '185px',
-                  left: '405px'
+                  left: '335px'
                 }, 'slow', function() {
-                  var card1 = 'images/cards/' + data.cards[0] + '.png';
-                  $('#com-card1').attr('src', card1);
-                  var card2 = 'images/cards/' + data.cards[1] + '.png';
-                  $('#com-card2').attr('src', card2);
-                  var card3 = 'images/cards/' + data.cards[2] + '.png';
-                  $('#com-card3').attr('src', card3);
-                  if (!data.dealer) {
-                    $('#down').removeClass('hide');
-                    $('#even').text('Check').removeClass('hide');
-                    $('#up').text('Bet ' + data.bb).removeClass('hide');
-                    $('#bet-selector').removeClass('hide');
-                  }
+                  $('#com-card3').animate({
+                    top: '185px',
+                    left: '405px'
+                  }, 'slow', function() {
+                    var card1 = 'images/cards/' + data.cards[0] + '.png';
+                    $('#com-card1').attr('src', card1);
+                    var card2 = 'images/cards/' + data.cards[1] + '.png';
+                    $('#com-card2').attr('src', card2);
+                    var card3 = 'images/cards/' + data.cards[2] + '.png';
+                    $('#com-card3').attr('src', card3);
+                    if (!data.dealer) {
+                      $('#down').removeClass('hide');
+                      $('#even').text('Check').removeClass('hide');
+                      $('#up').text('Bet ' + data.bb).removeClass('hide');
+                      $('#bet-selector').removeClass('hide');
+                    }
+                  })
                 })
-              })
+              });
             });
             break;
           case 'open bet':
             $('#opponent p:last').text(data.stack);
-            $('#opp-bet').text(data.bet);
+            placeOppBet(data.bet);
             $('#down').removeClass('hide');
             $('#up').text('Raise to ' + (data.bet + data.bb)).removeClass('hide');
             $('#bet-selector').removeClass('hide');
@@ -352,54 +363,181 @@ function showState() {
             $('#bet-selector').removeClass('hide');
             break;
           case 'deal turn':
-            $('#player-bet').text('0');
-            $('#opp-bet').text('0');
-            $('#pot h5').text(data.pot);
+            $('#player-bet').text('0').addClass('hide');
+            $('#opp-bet').text('0').addClass('hide');
             $('#even').attr('data-check','open');
-            $('#com-card4').removeClass('hide');
-            $('#com-card4').animate({
-              top: '185px',
-              left: '475px'
-            }, 'slow', function() {
-              var card = 'images/cards/' + data.cards[3] + '.png';
-              $('#com-card4').attr('src', card);
-              if (!data.dealer) {
-                $('#down').removeClass('hide');
-                $('#even').text('Check').removeClass('hide');
-                $('#up').text('Bet ' + data.bb).removeClass('hide');
-                $('#bet-selector').removeClass('hide');
-              }
-            })
+            $('#pchips').animate({
+              left: '247px'
+            }, 1000, function() {
+              $('#pchips .chip').addClass('hide');
+              $('#pchips').css('left', '0px');
+            });
+            $('#oppchips').animate({
+              left: '-247px'
+            }, 1000, function() {
+              $('#oppchips .chip').addClass('hide');
+              $('#oppchips').css('left', '0px');
+              placePot(data.pot);
+              $('#com-card4').removeClass('hide');
+              $('#com-card4').animate({
+                top: '185px',
+                left: '475px'
+              }, 'slow', function() {
+                var card = 'images/cards/' + data.cards[3] + '.png';
+                $('#com-card4').attr('src', card);
+                if (!data.dealer) {
+                  $('#down').removeClass('hide');
+                  $('#even').text('Check').removeClass('hide');
+                  $('#up').text('Bet ' + data.bb).removeClass('hide');
+                  $('#bet-selector').removeClass('hide');
+                }
+              })
+            });
             break;
           case 'deal river':
-            $('#player-bet').text('0');
-            $('#opp-bet').text('0');
-            $('#pot h5').text(data.pot);
+            $('#player-bet').text('0').addClass('hide');
+            $('#opp-bet').text('0').addClass('hide');
             $('#even').attr('data-check','open');
-            $('#com-card5').removeClass('hide');
-            $('#com-card5').animate({
-              top: '185px',
-              left: '545px'
-            }, 'slow', function() {
-              var card = 'images/cards/' + data.cards[4] + '.png';
-              $('#com-card5').attr('src', card);
-              if (!data.dealer) {
-                $('#down').removeClass('hide');
-                $('#even').text('Check').removeClass('hide');
-                $('#up').text('Bet ' + data.bb).removeClass('hide');
-                $('#bet-selector').removeClass('hide');
-              }
+            $('#pchips').animate({
+              left: '247px'
+            }, 1000, function() {
+              $('#pchips .chip').addClass('hide');
+              $('#pchips').css('left', '0px');
+            });
+            $('#oppchips').animate({
+              left: '-247px'
+            }, 1000, function() {
+              $('#oppchips .chip').addClass('hide');
+              $('#oppchips').css('left', '0px');
+              placePot(data.pot);
+              $('#com-card5').removeClass('hide');
+              $('#com-card5').animate({
+                top: '185px',
+                left: '545px'
+              }, 'slow', function() {
+                var card = 'images/cards/' + data.cards[4] + '.png';
+                $('#com-card5').attr('src', card);
+                if (!data.dealer) {
+                  $('#down').removeClass('hide');
+                  $('#even').text('Check').removeClass('hide');
+                  $('#up').text('Bet ' + data.bb).removeClass('hide');
+                  $('#bet-selector').removeClass('hide');
+                }
+              })
             })
             break;
           case 'new hand':
-            $('#opp-card1').attr('src','images/cards/' + data.hand[0] + '.png');
-            $('#opp-card2').attr('src','images/cards/' + data.hand[1] + '.png');
+            if (data.winner) {
+              if (data.stage === 'showdown') {
+                $('#opp-card1').attr('src','images/cards/' + data.hand[0] + '.png');
+                $('#opp-card2').attr('src','images/cards/' + data.hand[1] + '.png');
+                $('#player-bet').text('0').addClass('hide');
+                $('#opp-bet').text('0').addClass('hide');
+                $('#even').attr('data-check','open');
+                $('#pchips').animate({
+                  left: '247px'
+                }, 1000, function() {
+                  $('#pchips .chip').addClass('hide');
+                  $('#pchips').css('left', '0px');
+                });
+                $('#oppchips').animate({
+                  left: '-247px'
+                }, 1000, function() {
+                  $('#oppchips .chip').addClass('hide');
+                  $('#oppchips').css('left', '0px');
+                  placePot(data.pot);
+                  if (data.winner === $('#player p:first').text()) {
+                    $('#pot h5').text('0').addClass('hide');
+                    $('#potchips').animate({
+                      left: '-300px'
+                    }, 1000, function() {
+                      $('#potchips .chip').addClass('hide');
+                      $('#potchips').css('left', '0px');
+                    })
+                  }
+                  else if (data.winner === 'tie') {
+                    var pot = Number($('#pot h5').text());
+                    $('#pot h5').text('0').addClass('hide');
+                    $('#potchips .chip').addClass('hide');
+                    $('#potchips').css('left', '0px');
+                    $('#pchips').css('left', '247px');
+                    $('#oppchips').css('left', '-247px');
+                    placePlayerBet(pot / 2);
+                    placeOppBet(pot / 2);
+                    $('#player-bet').addClass('hide');
+                    $('#opp-bet').addClass('hide');
+                    $('#pchips').animate({
+                      left: '0px'
+                    }, 1000, function() {
+                      $('#pchips .chip').addClass('hide');
+                    });
+                    $('#oppchips').animate({
+                      left: '0px'
+                    }, 1000, function() {
+                      $('#oppchips .chip').addClass('hide');
+                    });
+                  }
+                  else {
+                    $('#pot h5').text('0').addClass('hide');
+                    $('#potchips').animate({
+                      left: '350px'
+                    }, 1000, function() {
+                      $('#potchips .chip').addClass('hide');
+                      $('#potchips').css('left', '0px');
+                    })
+                  }
+                })
+              }
+              else {
+                $('#opp-card1').attr('src','images/cards/' + data.hand[0] + '.png');
+                $('#opp-card2').attr('src','images/cards/' + data.hand[1] + '.png');
+                if (data.winner === $('#player p:first').text()) {
+                  $('#pot h5').text('0').addClass('hide');
+                  $('#potchips').animate({
+                    left: '-300px'
+                  }, 1000, function() {
+                    $('#potchips .chip').addClass('hide');
+                    $('#potchips').css('left', '0px');
+                  })
+                }
+                else if (data.winner === 'tie') {
+                  var pot = Number($('#pot h5').text());
+                  $('#pot h5').text('0').addClass('hide');
+                  $('#potchips .chip').addClass('hide');
+                  $('#potchips').css('left', '0px');
+                  $('#pchips').css('left', '247px');
+                  $('#oppchips').css('left', '-247px');
+                  placePlayerBet(pot / 2);
+                  placeOppBet(pot / 2);
+                  $('#player-bet').addClass('hide');
+                  $('#opp-bet').addClass('hide');
+                  $('#pchips').animate({
+                    left: '0px'
+                  }, 1000, function() {
+                    $('#pchips .chip').addClass('hide');
+                  });
+                  $('#oppchips').animate({
+                    left: '0px'
+                  }, 1000, function() {
+                    $('#oppchips .chip').addClass('hide');
+                  });
+                }
+                else {
+                  $('#pot h5').text('0').addClass('hide');
+                  $('#potchips').animate({
+                    left: '350px'
+                  }, 1000, function() {
+                    $('#potchips .chip').addClass('hide');
+                    $('#potchips').css('left', '0px');
+                  })
+                }
+              }
+            }
             $('#player p:last').text(data.stack);
             $('#opponent p:last').text(data.oppstack);
-            $('#pot h5').text('0');
+            $('#even').attr('data-check','close');
             $('#player-bet').text('0');
             $('#opp-bet').text('0');
-            $('#even').attr('data-check','close');
             var stack = Number($('#player p:last').text());
             var bb = Number($('#table').attr('data-bb'));
             if (stack <= bb) {
@@ -461,84 +599,97 @@ function showState() {
             $('#create-card').removeClass('hide');
             break;
           case 'deal rest':
-            $('#player-bet').text('0');
-            $('#opp-bet').text('0');
-            $('#pot h5').text(data.pot);
+            $('#player-bet').text('0').addClass('hide');
+            $('#opp-bet').text('0').addClass('hide');
             $('#even').attr('data-check','open');
-            switch(data.stage) {
-              case 'pre':
-                $('#com-card1').removeClass('hide');
-                $('#com-card2').removeClass('hide');
-                $('#com-card3').removeClass('hide');
-                $('#com-card4').removeClass('hide');
-                $('#com-card5').removeClass('hide');
-                $('#com-card1').animate({
-                  top: '185px',
-                  left: '265px'
-                }, 'slow', function() {
-                  $('#com-card2').animate({
+
+            $('#pchips').animate({
+              left: '247px'
+            }, 1000, function() {
+              $('#pchips .chip').addClass('hide');
+              $('#pchips').css('left', '0px');
+            });
+            $('#oppchips').animate({
+              left: '-247px'
+            }, 1000, function() {
+              $('#oppchips .chip').addClass('hide');
+              $('#oppchips').css('left', '0px');
+              placePot(data.pot);
+              switch(data.stage) {
+                case 'pre':
+                  $('#com-card1').removeClass('hide');
+                  $('#com-card2').removeClass('hide');
+                  $('#com-card3').removeClass('hide');
+                  $('#com-card4').removeClass('hide');
+                  $('#com-card5').removeClass('hide');
+                  $('#com-card1').animate({
                     top: '185px',
-                    left: '335px'
+                    left: '265px'
                   }, 'slow', function() {
-                    $('#com-card3').animate({
+                    $('#com-card2').animate({
                       top: '185px',
-                      left: '405px'
+                      left: '335px'
                     }, 'slow', function() {
-                      var card1 = 'images/cards/' + data.cards[0] + '.png';
-                      $('#com-card1').attr('src', card1);
-                      var card2 = 'images/cards/' + data.cards[1] + '.png';
-                      $('#com-card2').attr('src', card2);
-                      var card3 = 'images/cards/' + data.cards[2] + '.png';
-                      $('#com-card3').attr('src', card3);
-                      $('#com-card4').animate({
+                      $('#com-card3').animate({
                         top: '185px',
-                        left: '475px'
+                        left: '405px'
                       }, 'slow', function() {
-                        var card4 = 'images/cards/' + data.cards[3] + '.png';
-                        $('#com-card4').attr('src', card4);
-                        $('#com-card5').animate({
+                        var card1 = 'images/cards/' + data.cards[0] + '.png';
+                        $('#com-card1').attr('src', card1);
+                        var card2 = 'images/cards/' + data.cards[1] + '.png';
+                        $('#com-card2').attr('src', card2);
+                        var card3 = 'images/cards/' + data.cards[2] + '.png';
+                        $('#com-card3').attr('src', card3);
+                        $('#com-card4').animate({
                           top: '185px',
-                          left: '545px'
+                          left: '475px'
                         }, 'slow', function() {
-                          var card5 = 'images/cards/' + data.cards[4] + '.png';
-                          $('#com-card5').attr('src', card5);
+                          var card4 = 'images/cards/' + data.cards[3] + '.png';
+                          $('#com-card4').attr('src', card4);
+                          $('#com-card5').animate({
+                            top: '185px',
+                            left: '545px'
+                          }, 'slow', function() {
+                            var card5 = 'images/cards/' + data.cards[4] + '.png';
+                            $('#com-card5').attr('src', card5);
+                          })
                         })
                       })
                     })
-                  })
-                });
-                break;
-              case 'flop':
-                $('#com-card4').removeClass('hide');
-                $('#com-card5').removeClass('hide');
-                $('#com-card4').animate({
-                  top: '185px',
-                  left: '475px'
-                }, 'slow', function() {
-                  var card4 = 'images/cards/' + data.cards[3] + '.png';
-                  $('#com-card4').attr('src', card4);
+                  });
+                  break;
+                case 'flop':
+                  $('#com-card4').removeClass('hide');
+                  $('#com-card5').removeClass('hide');
+                  $('#com-card4').animate({
+                    top: '185px',
+                    left: '475px'
+                  }, 'slow', function() {
+                    var card4 = 'images/cards/' + data.cards[3] + '.png';
+                    $('#com-card4').attr('src', card4);
+                    $('#com-card5').animate({
+                      top: '185px',
+                      left: '545px'
+                    }, 'slow', function() {
+                      var card5 = 'images/cards/' + data.cards[4] + '.png';
+                      $('#com-card5').attr('src', card5);
+                    })
+                  });
+                  break;
+                case 'turn':
+                  $('#com-card5').removeClass('hide');
                   $('#com-card5').animate({
                     top: '185px',
                     left: '545px'
                   }, 'slow', function() {
+                    var card4 = 'images/cards/' + data.cards[3] + '.png';
+                    $('#com-card4').attr('src', card4);
                     var card5 = 'images/cards/' + data.cards[4] + '.png';
                     $('#com-card5').attr('src', card5);
-                  })
-                });
-                break;
-              case 'turn':
-                $('#com-card5').removeClass('hide');
-                $('#com-card5').animate({
-                  top: '185px',
-                  left: '545px'
-                }, 'slow', function() {
-                  var card4 = 'images/cards/' + data.cards[3] + '.png';
-                  $('#com-card4').attr('src', card4);
-                  var card5 = 'images/cards/' + data.cards[4] + '.png';
-                  $('#com-card5').attr('src', card5);
-                });
-                break;
-            }
+                  });
+                  break;
+              }
+            });
             break;
         }
       });
@@ -1028,7 +1179,7 @@ $('#up').click(function(event) {
       var bet = Number($('#player-bet').text());
       var stack = Number($('#player p:last').text()) - raise + bet;
       $('#player p:last').text(stack);
-      $('#player-bet').text(raise);
+      placePlayerBet(raise);
       var pot = Number($('#pot h5').text()) + Number($('#player-bet').text()) + Number($('#opp-bet').text());
       var payload = {
         table: $('#table').attr('data-table'),
@@ -1046,7 +1197,7 @@ $('#up').click(function(event) {
       $('#even').addClass('hide');
       var bet = Number(array[1]);
       var stack = Number($('#player p:last').text()) - bet;
-      $('#player-bet').text(bet);
+      placePlayerBet(bet);
       var pot = Number($('#pot h5').text()) + Number($('#player-bet').text()) + Number($('#opp-bet').text());
       $('#player p:last').text(stack);
       var payload = {
@@ -1075,7 +1226,7 @@ $('#even').click(function() {
     var bet = Number(array[1]);
     var totalBet = Number($('#player-bet').text()) + bet;
     var stack = Number($('#player p:last').text()) - bet;
-    $('#player-bet').text(totalBet);
+    placePlayerBet(totalBet);
     $('#player p:last').text(stack);
     var pot = Number($('#pot h5').text()) + Number($('#opp-bet').text()) + Number($('#player-bet').text());
     var payload = {
@@ -1098,6 +1249,7 @@ $('#even').click(function() {
     }
     if (Number(array[1]) === bb / 2) {
       payload.action = 'open call';
+      placePlayerBet(bb);
     }
     else {
       payload.action = 'call';
@@ -1130,25 +1282,26 @@ $('#down').click(function() {
   var oppStack = Number($('#opponent p:last').text());
   var pot = Number($('#pot h5').text()) + Number($('#player-bet').text()) + Number($('#opp-bet').text());
   $('#opponent p:last').text(oppStack + pot);
+  $('#player-bet').text('0').addClass('hide');
+  $('#opp-bet').text('0').addClass('hide');
   $('#pchips').animate({
-    left: '417px'
-  }, 'slow', function() {
+    left: '247px'
+  }, 1000, function() {
     $('#pchips .chip').addClass('hide');
+    $('#pchips').css('left', '0px');
   });
   $('#oppchips').animate({
-    left: '417px'
-  }, 'slow', function() {
+    left: '-247px'
+  }, 1000, function() {
     $('#oppchips .chip').addClass('hide');
+    $('#oppchips').css('left', '0px');
     placePot(pot);
-    $('#pot').addClass('hide');
+    $('#pot h5').text('0').addClass('hide');
     $('#potchips').animate({
-      left: '675px'
-    }, 'slow', function() {
+      left: '350px'
+    }, 1000, function() {
       $('#potchips .chip').addClass('hide');
-      $('#pot h5').text('0');
-      $('#player-bet').text('0').addClass('hide');
-      $('#opp-bet').text('0').addClass('hide');
-      resetPlayerChips();
+      $('#potchips').css('left', 0);
     })
   });
   $('#up').addClass('hide');
@@ -1532,8 +1685,8 @@ function resetPlayerChips() {
 function placePot(num) {
   $('#potchips .chip').addClass('hide');
   var chips = calcChips(num);
-  console.log(chips);
   var count = 0;
+
   for (var i = 0; i < chips.length; i++) {
     for (var j = 0; j < chips[i]; j++) {
       count++;
@@ -1542,7 +1695,6 @@ function placePot(num) {
       $(selector).attr('src', image).removeClass('hide');
     }
   }
-  console.log(count);
 
   if (count <= 5) {
     for (var i = 0; i < count; i++) {
@@ -1586,7 +1738,7 @@ function placePot(num) {
       $(selector).css('left', place).removeClass('hide');
     }
   }
-  $('#pot h5').text(num);
+  $('#pot h5').text(num).removeClass('hide');
   $('#pot').removeClass('hide');
   return;
 }
@@ -1629,5 +1781,14 @@ function placePlayerBet(num) {
       $(selector).attr('src', image).removeClass('hide');
     }
   }
-  $('#player-bet').text(num).css('left', '219px').removeClass('hide');
+
+  if (count <= 5) {
+    $('#player-bet').text(num).css('left', '219px').removeClass('hide');
+  }
+  else if (count <= 15) {
+    $('#player-bet').text(num).css('left', '242px').removeClass('hide');
+  }
+  else {
+    $('#player-bet').text(num).css('left', '265px').removeClass('hide');
+  }
 }
