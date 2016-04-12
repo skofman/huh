@@ -8,17 +8,14 @@
 </head>
 <body>
   <!-- Front page menu-->
-  <div class="ui menu">
+  <div class="ui inverted transparent menu" id="main-menu">
     <div class="item">
       <img src="images/logo.png">
-    </div>
-    <div class="ui simple dropdown item">
       <div class="text">Heads Up Hold'em</div>
-      <i class="dropdown icon"></i>
-      <div class="menu">
-        <div class="item" id="leaderboard">Leaderboard</div>
-      </div>
     </div>
+    <div class="item" id="play">Play</div>
+    <div class="item" id="leaderboard">Leaderboard</div>
+    <div class="item" id="howto">How to play</div>
     <div class="item floated right hide" id="user-status">
       <img src="">
       <p></p>
@@ -27,6 +24,47 @@
       <div class="ui button" id="show-login">Log in</div>
       <div class="ui primary button" id="show-signup">Sign up</div>
       <div class="ui primary button hide" id="logout">Log out</div>
+    </div>
+  </div>
+  <!-- Rules modal -->
+  <div class="ui small modal" id="rules">
+    <div class="ui center aligned header">Texas Holdem - Heads Up Rules</div>
+    <div class="content">
+      <div class="description">
+        <p><b>Heads up Texas Holdem</b> is one of the most fun, challenging and misunderstood variations of holdem. The thrill of playing a friend or foe in a battle of heads up holdem is unmatched in all of poker. Is he bluffing? Does he have the nuts? Should I value bet my second pair? Well, I will not get ahead of myself just yet. Before you can play Texas Holdem heads up against an opponent, you have to know the rules, right?</p>
+      </div>
+      <h4>Button Position</h4>
+      <div class="description">
+        <p>Without a doubt, the single heads-up rule that creates the most confusion is who has the button and who has which blinds?</p>
+      </div>
+      <h4>Heads-up Button Position and Dealing</h4>
+      <ul>
+        <li>The button has the small blind when playing Texas Holdem heads up.</li>
+        <li>The person who is the dealer has the button and also posts his/her small blind. This means that the other player (without the button) is the big blind.</li>
+        <li>The small blind acts first on the first round of betting before the flop (pre-flop).</li>
+        <li>The dealer (button) deals the small blind the first card, and the second card to the other player (big blind). Deal the 3rd (total) card to the small blind and the last card to the other player. This leaves each player with two hole cards and the first round of pre-flop betting can begin.</li>
+      </ul>
+      <h4>Heads-up Pre-flop Betting</h4>
+      <ul>
+        <li>The small blind can fold, call or raise.</li>
+        <li>If the small blind just calls, then the big blind (non-button player) can either check and see the flop, or raise.</li>
+      </ul>
+      <h4>All Other Rounds</h4>
+      <ul>
+        <li>The flop is dealt (3 cards).</li>
+        <li>The person who was big blind pre-flop is first to act on the flop. (In case you forgot, this is the player who does NOT have the button – the button acts last on all streets except pre-flop.)</li>
+        <li>The player who is first to act can bet or check. If that player checks, the button can then bet or check.</li>
+        <li>If both players check, then the dealer deals the turn.</li>
+        <li>Repeat the betting sequence for the turn and the river. (the 5th card)</li>
+        <li>After all rounds of betting are complete, both players show their hands and the person with the best hand wins!</li>
+      </ul>
+      <hr>
+      <div class="description">
+        <p>Now wasn’t that fun?!? Just grab a friend and have some free fun.</p>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="ui green cancel button">Close</div>
     </div>
   </div>
   <!-- Avatar selection modal -->
@@ -79,7 +117,7 @@
       </div>
     </div>
     <div class="actions">
-      <div class="ui cancel button">Close</div>
+      <div class="ui green cancel button">Close</div>
     </div>
   </div>
   <!-- Login form -->
@@ -145,7 +183,7 @@
     <div class="one wide column"></div>
     <!-- Player menu -->
     <div class="three wide column">
-      <div class="ui vertical pointing menu" id="player-menu">
+      <div class="ui vertical pointing inverted menu" id="player-menu">
         <a class="active item">Home</a>
         <a class="item">Your table</a>
         <a class="item">Join table</a>
@@ -159,14 +197,15 @@
       <div class="row" id="info">
         <div class="ui segment">
           <h1>Player information</h1>
-          <button type="button" id="reset-bal" class="ui compact blue button">Reset balance</button>
+          <button class="ui compact blue button user-btn" name="start">Start table</button>
+          <button class="ui compact blue button user-btn" name="join">Join table</button>
           <hr>
           <div class="ui grid">
             <div class="row">
               <div class="four wide column">
                 <h5>Username:</h5>
               </div>
-              <div class="eight wide column" id="dash-user">
+              <div class="four wide column" id="dash-user">
                 <h5></h5>
                 <i class="lock icon"></i>
               </div>
@@ -175,7 +214,7 @@
               <div class="four wide column">
                 <h5>Avatar:</h5>
               </div>
-              <div class="eight wide column" id="dash-avatar">
+              <div class="four wide column" id="dash-avatar">
                 <img src="">
                 <i class="edit icon" id="edit-avatar"></i>
               </div>
@@ -184,16 +223,17 @@
               <div class="four wide column">
                 <h5>Balance:</h5>
               </div>
-              <div class="eight wide column" id="dash-balance">
+              <div class="four wide column" id="dash-balance">
                 <h5></h5>
                 <i class="lock icon"></i>
+                <button type="button" id="reset-bal" class="ui mini compact blue button">Reset balance</button>
               </div>
             </div>
             <div class="row">
               <div class="four wide column">
                 <h5>First name:</h5>
               </div>
-              <div class="eight wide column" id="dash-first">
+              <div class="four wide column" id="dash-first">
                 <h5></h5>
                 <i class="edit icon" id="edit-first"></i>
                 <div class="ui input hide">

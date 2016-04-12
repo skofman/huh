@@ -56,6 +56,8 @@ function showState() {
         socket.emit('play', payload);
         clearTable();
       }
+      $('body').css('background-image', 'url()').css('background-color', '#797979');
+      $('#play').addClass('hide');
       //Updating dashboard
       $('#dash-user h5').text(data.username + ' ');
       $('#dash-avatar img').attr('src', data.avatar);
@@ -736,6 +738,8 @@ $('#logout').click(function() {
     $('#logout').addClass('hide');
     $('#user-status').addClass('hide');
     $('#main').addClass('hide');
+    $('body').css('background-image', "url('../images/background.jpg')");
+    $('#play').removeClass('hide');
   }
 });
 //event listener for choosing a username
@@ -1079,7 +1083,7 @@ socket.on('post tables', function(data) {
       var btn = document.createElement('button');
 
       $(col).addClass('column').appendTo('#game-grid');
-      $(card).addClass('ui card').appendTo(col);
+      $(card).addClass('ui card').css('background-color', '#CECECE').appendTo(col);
       $(nameContent).addClass('content').appendTo(card);
       var idName = key + '-name';
       $(name).addClass('center aligned header').attr('id', idName).text(key).appendTo(nameContent);
@@ -1096,7 +1100,7 @@ socket.on('post tables', function(data) {
       var idValue = key + '-val';
       $(input).attr({type: 'number', 'data-bb': data[key].bb, id: idValue}).appendTo(inputBox);
       $(btnContent).addClass('extra content').appendTo(card);
-      $(btn).addClass('ui fluid button').text('Join table').attr('id',key).appendTo(btnContent);
+      $(btn).addClass('ui fluid button').css({'background-color': '#494949', 'color': '#CACACA'}).text('Join table').attr('id',key).appendTo(btnContent);
     }
   }
 });
@@ -1486,7 +1490,7 @@ function showSessions() {
       var segment = document.createElement('div');
       var grid = document.createElement('div');
 
-      $(segment).addClass('ui segment session-tab').appendTo(segments);
+      $(segment).addClass('ui segment session-tab').css('background-color', '#CECECE').appendTo(segments);
       $(grid).addClass('ui stackable five column grid').appendTo(segment);
 
       for (key in array[i]) {
@@ -1792,3 +1796,34 @@ function placePlayerBet(num) {
     $('#player-bet').text(num).css('left', '265px').removeClass('hide');
   }
 }
+//Showing rules of the game
+$('#howto').click(function() {
+  $('#rules').modal('show');
+})
+//Bring up the login window
+$('#play').click(function() {
+  $('#show-login').click();
+})
+//Start or join game from home screen
+$('.user-btn').click(function(event) {
+  if (event.target.name === 'start') {
+    $('#player-menu a:nth-of-type(1)').removeClass('active');
+    $('#player-menu a:nth-of-type(2)').addClass('active');
+    $('#info').addClass('hide');
+    $('#new-table').removeClass('hide');
+    $('#join-table').addClass('hide');
+    $('#active-game').addClass('hide');
+    $('#sessions').addClass('hide');
+    $('#sessions .segments').remove();
+  }
+  else if (event.target.name === 'join') {
+    $('#player-menu a:nth-of-type(1)').removeClass('active');
+    $('#player-menu a:nth-of-type(3)').addClass('active');
+    $('#info').addClass('hide');
+    $('#new-table').addClass('hide');
+    $('#join-table').removeClass('hide');
+    $('#active-game').addClass('hide');
+    $('#sessions').addClass('hide');
+    $('#sessions .segments').remove();
+  }
+})

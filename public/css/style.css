@@ -1,3 +1,43 @@
+body {
+  background-image: url('../images/background.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+#main-menu img {
+  margin-right: 15px;
+}
+
+#main-menu .item {
+  color: #CACACA !important;
+}
+
+#main-menu .item:hover {
+  cursor: pointer;
+}
+
+.#main-menu {
+  background-color: #101D13 !important;
+}
+
+#main-menu img {
+  border-radius: 100%;
+}
+
+#rules li {
+  list-style: circle;
+}
+
+#player-menu a {
+  background-color: #CECECE;
+  color: #494949;
+}
+
+.active {
+  background-color: #494949 !important;
+  color: #CACACA !important;
+}
+
 #show-login {
   margin-right: 20px;
 }
@@ -38,6 +78,10 @@
 
 .edit.icon:hover {
   cursor: pointer;
+}
+
+#info .segment {
+  background-color: #CECECE;
 }
 
 #info div h1 {
@@ -377,6 +421,18 @@
 
 #dash-avatar img {
   width: 25px;
+  border-radius: 100%;
+}
+
+#create-card,
+#remove-card {
+  background-color: #CECECE;
+}
+
+#remove,
+#create {
+  background-color: #494949;
+  color: #CACACA;
 }
 
 #alert,
@@ -781,4 +837,12 @@
 #potchips .chip:nth-of-type(25) {
   left: 429px;
   top: 275px;
+}
+
+.modal {
+  color: black !important;
+}
+
+.user-btn {
+  vertical-align: top !important;
 }
