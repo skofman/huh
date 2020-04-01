@@ -4,9 +4,11 @@ import './service/passport';
 import passport from 'passport';
 import bodyParser from 'body-parser';
 import cookieSession from 'cookie-session';
+import cors from 'cors';
 
 const app = express();
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(
   cookieSession({
