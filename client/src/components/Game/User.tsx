@@ -4,6 +4,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Lock, Edit } from "@material-ui/icons";
 import Avatars from "./Avatars";
 import { useHistory } from "react-router-dom";
+import FieldUpdate from "./FieldUpdate";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -53,6 +54,9 @@ interface Props {
 const User: React.FunctionComponent<Props> = ({ user, setUser }) => {
   const classes = useStyles();
   const [changeAvatar, setChangeAvatar] = useState(false);
+  const [fn, setFN] = useState(true);
+  const [ln, setLN] = useState(true);
+  const [loc, setLoc] = useState(true);
   const history = useHistory();
 
   const resetBalance = useCallback(() => {
@@ -120,22 +124,55 @@ const User: React.FunctionComponent<Props> = ({ user, setUser }) => {
           <Typography variant="subtitle2">First Name:</Typography>
         </Grid>
         <Grid item xs={8} className={classes.flex}>
-          {firstName}
-          <Edit fontSize="small" className={classes.edit} />
+          {fn ? (
+            <>
+              {firstName}
+              <Edit fontSize="small" className={classes.edit} onClick={() => setFN(false)} />
+            </>
+          ) : (
+            <FieldUpdate
+              value={firstName ? firstName : ""}
+              close={() => setFN(true)}
+              field="firstName"
+              setUser={setUser}
+            />
+          )}
         </Grid>
         <Grid item xs={4}>
           <Typography variant="subtitle2">Last Name:</Typography>
         </Grid>
         <Grid item xs={8} className={classes.flex}>
-          {lastName}
-          <Edit fontSize="small" className={classes.edit} />
+          {ln ? (
+            <>
+              {lastName}
+              <Edit fontSize="small" className={classes.edit} onClick={() => setLN(false)} />
+            </>
+          ) : (
+            <FieldUpdate
+              value={lastName ? lastName : ""}
+              close={() => setLN(true)}
+              field="lastName"
+              setUser={setUser}
+            />
+          )}
         </Grid>
         <Grid item xs={4}>
           <Typography variant="subtitle2">Location:</Typography>
         </Grid>
         <Grid item xs={8} className={classes.flex}>
-          {location}
-          <Edit fontSize="small" className={classes.edit} />
+          {loc ? (
+            <>
+              {location}
+              <Edit fontSize="small" className={classes.edit} onClick={() => setLoc(false)} />
+            </>
+          ) : (
+            <FieldUpdate
+              value={location ? location : ""}
+              close={() => setLoc(true)}
+              field="location"
+              setUser={setUser}
+            />
+          )}
         </Grid>
       </Grid>
     </Paper>

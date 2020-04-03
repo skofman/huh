@@ -8,7 +8,7 @@ interface IUpdate {
   value: string | number;
 }
 
-const allowedFields = ["location", "first_name", "last_name", "avatar", "deck"];
+const allowedFields = ["location", "firstName", "lastName", "avatar", "deck"];
 
 export default async (req: Request, res: Response) => {
   const { updates } = req.body;
