@@ -5,6 +5,8 @@ import passport from "passport";
 import bodyParser from "body-parser";
 import cookieSession from "cookie-session";
 import cors from "cors";
+import socketIO from "socket.io";
+import http from "http";
 
 const app = express();
 
@@ -23,4 +25,11 @@ app.use(passport.session());
 
 router(app);
 
-export default app;
+const server = http.createServer(app);
+const io = socketIO(server);
+
+io.on("connection", (socket) => {
+  console.log("connection");
+});
+
+export default server;
