@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, useHistory, Route } from "react-router-dom";
 import TopBar from "./TopBar";
-import User from "./User";
+import User, { IUser } from "./User";
 
 const Game: React.FunctionComponent = () => {
   const history = useHistory();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
 
   useEffect(() => {
     fetch("/api/user")
@@ -34,7 +34,7 @@ const Game: React.FunctionComponent = () => {
     <div>
       <TopBar username={username} avatar={avatar} balance={balance} />
       <BrowserRouter basename="/game">
-        <Route exact path="/" render={(routeProps) => <User {...routeProps} user={user} />} />
+        <Route exact path="/" render={(routeProps) => <User {...routeProps} user={user} setUser={setUser} />} />
       </BrowserRouter>
     </div>
   );

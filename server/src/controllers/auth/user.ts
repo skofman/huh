@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import pgql from "../pgql";
-import convertToCamelCase from "../utils/convertToCamelCase";
+import pgql from "../../pgql";
+import convertToCamelCase from "../../utils/convertToCamelCase";
 
 const user = async (req: Request, res: Response) => {
   if (!req.isAuthenticated()) {

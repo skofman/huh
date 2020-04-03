@@ -78,6 +78,7 @@ const TopBar: React.FunctionComponent<Props> = ({ username, avatar, balance }) =
             open={Boolean(anchorEl)}
             onClose={handleClose}
           >
+            <MenuItem onClick={navigate("/game")}>Home</MenuItem>
             <MenuItem onClick={navigate("/game/active")}>Active Game</MenuItem>
             <MenuItem onClick={navigate("/game/tables")}>Your tables</MenuItem>
             <MenuItem onClick={navigate("/game/join")}>Join table</MenuItem>

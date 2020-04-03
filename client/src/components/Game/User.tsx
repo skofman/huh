@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Paper, Grid, Typography, Button, Avatar } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { Lock, Edit } from "@material-ui/icons";
+import Avatars from "./Avatars";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -33,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-interface User {
+export interface IUser {
   id: string;
   avatar: string | null;
   balance: number;
@@ -44,11 +46,14 @@ interface User {
 }
 
 interface Props {
-  user: User | null;
+  user: IUser | null;
+  setUser: (user: IUser) => void;
 }
 
-const User: React.FunctionComponent<Props> = ({ user }) => {
+const User: React.FunctionComponent<Props> = ({ user, setUser }) => {
   const classes = useStyles();
+  const [changeAvatar, setChangeAvatar] = useState(false);
+  const history = useHistory();
 
   if (!user) {
     return null;
@@ -58,13 +63,14 @@ const User: React.FunctionComponent<Props> = ({ user }) => {
 
   return (
     <Paper className={classes.paper}>
+      <Avatars open={changeAvatar} setStatus={setChangeAvatar} setUser={setUser} />
       <Grid container spacing={2}>
         <Grid item xs={12} className={classes.header}>
           <Typography variant="h5">Player info</Typography>
-          <Button variant="contained" color="primary" className={classes.btn}>
+          <Button variant="contained" color="primary" className={classes.btn} onClick={() => history.push("/tables")}>
             Start game
           </Button>
-          <Button variant="contained" color="primary" className={classes.btn}>
+          <Button variant="contained" color="primary" className={classes.btn} onClick={() => history.push("/join")}>
             Join game
           </Button>
         </Grid>
@@ -83,7 +89,7 @@ const User: React.FunctionComponent<Props> = ({ user }) => {
         </Grid>
         <Grid item xs={8} className={classes.flex}>
           <Avatar className={classes.avatar} src={avatar ? avatar : "images/avatars/none.png"} />
-          <Edit fontSize="small" className={classes.edit} />
+          <Edit fontSize="small" className={classes.edit} onClick={() => setChangeAvatar(true)} />
         </Grid>
         <Grid item xs={4}>
           <Typography variant="subtitle2">Balance:</Typography>
