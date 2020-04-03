@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Paper, Grid, Typography, Button, Avatar } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { Lock, Edit } from "@material-ui/icons";
@@ -55,6 +55,15 @@ const User: React.FunctionComponent<Props> = ({ user, setUser }) => {
   const [changeAvatar, setChangeAvatar] = useState(false);
   const history = useHistory();
 
+  const resetBalance = useCallback(() => {
+    fetch("api/resetBalance").then(async (res) => {
+      if (res.status === 200) {
+        const response = await res.json();
+        setUser(response.user);
+      }
+    });
+  }, [setUser]);
+
   if (!user) {
     return null;
   }
@@ -96,7 +105,14 @@ const User: React.FunctionComponent<Props> = ({ user, setUser }) => {
         </Grid>
         <Grid item xs={8} className={classes.flex}>
           <Typography variant="h6">{balance}</Typography>
-          <Button variant="contained" size="small" color="primary" className={classes.reset}>
+          <Button
+            variant="contained"
+            size="small"
+            color="primary"
+            className={classes.reset}
+            disabled={balance >= 500}
+            onClick={resetBalance}
+          >
             Reset balance
           </Button>
         </Grid>

@@ -1,3 +1,4 @@
 import updateUser from "./updateUser";
+import resetBalance from "./resetBalance";
 
-export { updateUser };
+export { updateUser, resetBalance };
