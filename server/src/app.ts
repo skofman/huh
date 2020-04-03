@@ -1,10 +1,10 @@
-import express from 'express';
-import router from './router';
-import './service/passport';
-import passport from 'passport';
-import bodyParser from 'body-parser';
-import cookieSession from 'cookie-session';
-import cors from 'cors';
+import express from "express";
+import router from "./router";
+import "./service/passport";
+import passport from "passport";
+import bodyParser from "body-parser";
+import cookieSession from "cookie-session";
+import cors from "cors";
 
 const app = express();
 
@@ -12,9 +12,9 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(
   cookieSession({
-    name: 'session',
+    name: "session",
     keys: [process.env.SECRET],
-    maxAge: 1000 * 30
+    maxAge: 1000 * 60 * 60 * 24 * 7
   })
 );
 

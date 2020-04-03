@@ -77,7 +77,7 @@ const Login: React.FunctionComponent = () => {
           setError(false);
           actions.resetForm();
 
-          history.push('/home');
+          history.push('/game');
         })
         .catch((e) => {
           setError(true);

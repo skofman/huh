@@ -78,7 +78,7 @@ const SignUp: React.FunctionComponent = () => {
           setError('');
           actions.resetForm();
 
-          history.push('/home');
+          history.push('/game');
         })
         .catch((e) => {
           setError('Some error happened');
