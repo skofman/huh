@@ -8,8 +8,14 @@
     "start": "next start"
   },
   "dependencies": {
+    "@material-ui/core": "^4.9.8",
+    "@material-ui/icons": "^4.9.1",
+    "formik": "^2.1.4",
     "next": "9.3.4",
     "react": "16.13.1",
     "react-dom": "16.13.1"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.2"
   }
 }
